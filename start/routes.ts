@@ -16,14 +16,14 @@ router.get('/actor', async () => {
   return {
     '@context': ['https://www.w3.org/ns/activitystreams', 'https://w3id.org/security/v1'],
 
-    'id': 'https://noticeboard.events/actor',
+    'id': 'https://www.noticeboard.events/actor',
     'type': 'Person',
     'preferredUsername': 'lily418',
-    'inbox': 'https://noticeboard.events/inbox',
+    'inbox': 'https://www.noticeboard.events/inbox',
 
     'publicKey': {
-      id: 'https://noticeboard.events/actor#main-key',
-      owner: 'https://noticeboard.events/actor',
+      id: 'https://www.noticeboard.events/actor#main-key',
+      owner: 'https://www.noticeboard.events/actor',
       publicKeyPem: publicKey,
     },
   }
@@ -37,7 +37,7 @@ router.get('/.well-known/webfinger', async () => {
       {
         rel: 'self',
         type: 'application/activity+json',
-        href: 'https://noticeboard.events/actor',
+        href: 'https://www.noticeboard.events/actor',
       },
     ],
   }

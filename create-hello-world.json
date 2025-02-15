@@ -1,13 +1,13 @@
 {
     "@context": "https://www.w3.org/ns/activitystreams",
-    "id": "https://noticeboard.events/create-hello-world",
+    "id": "https://www.noticeboard.events/create-hello-world",
     "type": "Create",
-    "actor": "https://noticeboard.events/actor",
+    "actor": "https://www.noticeboard.events/actor",
     "object": {
-        "id": "https://noticeboard.events/hello-world",
+        "id": "https://www.noticeboard.events/hello-world",
         "type": "Note",
         "published": "2025-02-15T21:05:11Z",
-        "attributedTo": "https://noticeboard.events/actor",
+        "attributedTo": "https://www.noticeboard.events/actor",
         "inReplyTo": "https://lgbtqia.space/@PurpleOrchid/114009921890763467",
         "content": "<p>Hello world</p>",
         "to": "https://www.w3.org/ns/activitystreams#Public"

@@ -10,7 +10,7 @@ export default class Echo extends BaseCommand {
   static options: CommandOptions = {}
 
   async run() {
-    const message = fs.readFileSync('keys/create-hello-world.json', 'utf-8')
+    const message = fs.readFileSync('create-hello-world.json', 'utf-8')
     const privateKey = fs.readFileSync('keys/private.pem', 'utf-8')
 
     const digest = 'SHA-256=' + createHash('sha256').update(message).digest('base64')
@@ -25,7 +25,7 @@ export default class Echo extends BaseCommand {
     )
 
     const header =
-      'keyId="https://noticeboard.events/actor",headers="(request-target) host date digest",signature="' +
+      'keyId="https://www.noticeboard.events/actor",headers="(request-target) host date digest",signature="' +
       signature +
       '"'
 
