@@ -10,10 +10,11 @@ export default class Echo extends BaseCommand {
   static options: CommandOptions = {}
 
   async run() {
-    const message = fs.readFileSync('create-hello-world.json', 'utf-8')
-    const privateKey = fs.readFileSync('keys/private.pem', 'utf-8')
+    const document = fs.readFileSync('create-hello-world.json', 'utf-8')
+    const privateKey = fs.readFileSync('keys/private.pem', 'utf-8').split('\n').join('').trim()
 
-    const digest = 'SHA-256=' + createHash('sha256').update(message).digest('base64')
+    const digest = 'SHA-256=' + createHash('sha256').update(document).digest('base64')
+
     const date = new Date().toUTCString()
     const signedString = `(request-target): post /inbox\nhost: mastodon.social\ndate: ${date}\ndigest: ${digest}`
 
@@ -43,7 +44,7 @@ export default class Echo extends BaseCommand {
           Signature: header,
           Digest: digest,
         },
-        body: message,
+        body: document,
       })
     )
 
