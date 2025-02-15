@@ -35,10 +35,10 @@ export default class Echo extends BaseCommand {
     // .post('https://mastodon.social/inbox', body: document)
 
     const response = await fetch(
-      new Request('https://lgbtqia.space/inbox', {
+      new Request('https://mastodon.social/inbox', {
         method: 'POST',
         headers: {
-          Host: 'lgbtqia.space',
+          Host: 'mastodon.social',
           Date: date,
           Signature: header,
           Digest: digest,
@@ -53,6 +53,3 @@ export default class Echo extends BaseCommand {
     console.log('response.json', await response.json())
   }
 }
-
-// https://lgbtqia.space/.well-known/webfinger?resource=acct:PurpleOrchid@lgbtqia.space
-// https://mastodon.social/.well-known/webfinger?resource=acct:@Gargron@mastodon.social
