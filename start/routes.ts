@@ -11,7 +11,8 @@ import router from '@adonisjs/core/services/router'
 import fs from 'node:fs'
 
 router.on('/').renderInertia('home')
-router.get('/actor', async () => {
+router.get('/actor', async ({ request }) => {
+  console.log('Request to /actor', request.ip())
   const publicKey = fs.readFileSync('keys/public.pem', 'utf-8')
   return {
     '@context': ['https://www.w3.org/ns/activitystreams', 'https://w3id.org/security/v1'],
