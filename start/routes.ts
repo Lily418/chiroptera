@@ -24,7 +24,7 @@ router.get('/actor', async () => {
     'publicKey': {
       id: 'https://www.noticeboard.events/actor#main-key',
       owner: 'https://www.noticeboard.events/actor',
-      publicKeyPem: publicKey,
+      publicKeyPem: publicKey.trim(),
     },
   }
 })
