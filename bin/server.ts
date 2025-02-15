@@ -8,9 +8,11 @@
 | command to run this file and monitor file changes
 |
 */
-
+import fs from 'node:fs'
 import 'reflect-metadata'
 import { Ignitor, prettyPrintError } from '@adonisjs/core'
+import { createServer as createHttpServer } from 'node:http'
+import { createServer as createHttpsServer } from 'node:https'
 
 /**
  * URL to the application root. AdonisJS need it to resolve
@@ -38,7 +40,20 @@ new Ignitor(APP_ROOT, { importer: IMPORTER })
     app.listenIf(app.managedByPm2, 'SIGINT', () => app.terminate())
   })
   .httpServer()
-  .start()
+  .start((handle) => {
+    if (!process.env.SSL_KEY_PATH || !process.env.SSL_CERT_PATH) {
+      console.log('Using HTTP as no SSL key')
+      return createHttpServer(handle)
+    }
+
+    return createHttpsServer(
+      {
+        key: fs.readFileSync(process.env.SSL_KEY_PATH, 'utf8'),
+        cert: fs.readFileSync(process.env.SSL_CERT_PATH, 'utf8'),
+      },
+      handle
+    )
+  })
   .catch((error) => {
     process.exitCode = 1
     prettyPrintError(error)

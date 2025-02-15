@@ -44,5 +44,5 @@ router.get('/.well-known/webfinger', async () => {
 })
 
 router.post('/inbox', async ({ request }) => {
-  console.log('request')
+  console.log('request', request)
 })
