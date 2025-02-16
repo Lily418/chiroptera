@@ -29,6 +29,7 @@ export const signedRequest = async (
     '"'
 
   const headers: Record<string, string> = {
+    'Accept': 'application/activity+json',
     'Content-Type': 'application/activity+json',
     'Host': host,
     'Date': date,
