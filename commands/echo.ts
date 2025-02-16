@@ -23,10 +23,7 @@ export default class Echo extends BaseCommand {
 
     var signerObject = createSign('RSA-SHA256')
     signerObject.update(signedString)
-    var signature = signerObject.sign(
-      { key: privateKey, padding: constants.RSA_PKCS1_PSS_PADDING },
-      'base64'
-    )
+    var signature = signerObject.sign({ key: privateKey }, 'base64')
 
     const header =
       'keyId="https://www.noticeboard.events/actor",headers="(request-target) host date digest",signature="' +
