@@ -119,7 +119,7 @@ export default class ActivtyPubSigningMiddleware {
     }
 
     // Allow HTTP KEYS for local testing only
-    if (keyUrl.protocol !== 'https' && !process.env.ALLOW_HTTP_KEYS) {
+    if (keyUrl.protocol !== 'https:' && !process.env.ALLOW_HTTP_KEYS) {
       inboxLogger.info({ keyUrl }, 'Key URL Protocol is not https')
 
       return response
