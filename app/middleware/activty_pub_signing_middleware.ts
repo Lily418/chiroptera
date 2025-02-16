@@ -18,6 +18,12 @@ export default class ActivtyPubSigningMiddleware {
       return response.status(401).send({ error: 'Expected a request body' })
     }
 
+    const signatureHeader = request.header('Signature')
+    if (!signatureHeader) {
+      inboxLogger.info('Disregarding inbox message missing signature header')
+      return response.status(401).send({ error: 'Missing Signature Header' })
+    }
+
     const dateHeader = request.header('Date')
     if (!dateHeader) {
       inboxLogger.info('Disregarding inbox message for Missing Date Header')
@@ -59,15 +65,6 @@ export default class ActivtyPubSigningMiddleware {
 
     const requestBody = request.body()
     const assertedActor = requestBody.actor
-
-    // TODO: We are missing security checks which would be required in a serious production application
-    // While this proves the request comes from an actor, what if the payload contains an attribution to someone else? In reality you’d want to check that both are the same, otherwise one actor could forge messages from other people."
-    // See https://blog.joinmastodon.org/2018/07/how-to-make-friends-and-verify-requests/
-    const signatureHeader = request.header('Signature')
-    if (!signatureHeader) {
-      inboxLogger.info('Disregarding inbox message missing signature header')
-      return response.status(401).send({ error: 'Missing Signature Header' })
-    }
 
     const signatureParts = signatureHeader
       .split(',')
