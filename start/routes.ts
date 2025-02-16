@@ -113,46 +113,42 @@ router.post('/inbox', async ({ request, response }) => {
 
   const keyResponse = await signedRequest({ host, path, protocol: 'https', method: 'GET', hash })
 
-  //   console.log('response.status', keyResponse.status)
-  console.log('keyResponse.ok', keyResponse.ok)
-  console.log('keyResponse.json', await keyResponse.json())
+  if (!keyResponse.ok) {
+    return response.status(401).send({ error: `Failed to fetch fetch ${keyId}` })
+  }
 
-  //   if (!keyResponse.ok) {
-  //     return response.status(401).send({ error: `Failed to fetch fetch ${keyId}` })
-  //   }
+  const keyResponseJson = (await keyResponse.json()) as any
+  console.log('keyResponseJson', keyResponseJson)
+  const key = keyResponseJson.publicKey.publicKeyPem
+  console.log('key', key)
+  if (!key) {
+    return response.status(401).send({ error: `Failed to fetch fetch ${keyId}` })
+  }
 
-  //   const keyResponseJson = (await keyResponse.json()) as any
-  //   console.log('keyResponseJson', keyResponseJson)
-  //   const key = keyResponseJson.publicKey.publicKeyPem
-  //   console.log('key', key)
-  //   if (!key) {
-  //     return response.status(401).send({ error: `Failed to fetch fetch ${keyId}` })
-  //   }
+  const comparisonString = headers
+    .split(' ')
+    .map((signedHeaderName) => {
+      if (signedHeaderName === '(request-target)') {
+        return '(request-target): post /inbox'
+      } else {
+        return `${signedHeaderName}: ${request.header(String(signedHeaderName).charAt(0).toUpperCase() + String(signedHeaderName).slice(1))}`
+      }
+    })
+    .join('\n')
 
-  //   const comparisonString = headers
-  //     .split(' ')
-  //     .map((signedHeaderName) => {
-  //       if (signedHeaderName === '(request-target)') {
-  //         return '(request-target): post /inbox'
-  //       } else {
-  //         return `${signedHeaderName}: ${request.header(String(signedHeaderName).charAt(0).toUpperCase() + String(signedHeaderName).slice(1))}`
-  //       }
-  //     })
-  //     .join('\n')
+  console.log('comparisonString', comparisonString)
 
-  //   console.log('comparisonString', comparisonString)
+  const valid = verify('RSA-SHA256', Buffer.from(comparisonString, 'utf-8'), key, signature)
 
-  //   const valid = verify('RSA-SHA256', Buffer.from(comparisonString, 'utf-8'), key, signature)
+  if (!valid) {
+    return response.status(401).send({
+      error: `Verification failed for ${request.header('host')} ${keyId}`,
+      comparisonString,
+      signature: signatureParts.signature,
+    })
+  }
 
-  //   if (!valid) {
-  //     return response.status(401).send({
-  //       error: `Verification failed for ${request.header('host')} ${keyId}`,
-  //       comparisonString,
-  //       signature: signatureParts.signature,
-  //     })
-  //   }
-
-  //   console.log('request', request.body())
+  console.log('request', request.body())
   return {}
 })
 
