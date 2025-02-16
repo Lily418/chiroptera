@@ -21,6 +21,11 @@ const loggerConfig = defineConfig({
           .toArray(),
       },
     },
+    inbox: {
+      enabled: true,
+      name: 'inbox',
+      level: env.get('LOG_LEVEL', 'info'),
+    },
   },
 })
 

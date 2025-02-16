@@ -7,14 +7,16 @@
 |
 */
 
-import { base64 } from '@adonisjs/core/helpers'
+import logger from '@adonisjs/core/services/logger'
 import router from '@adonisjs/core/services/router'
 import { verify } from 'node:crypto'
 import fs from 'node:fs'
 import { signedRequest } from '../utils/sign_request.js'
 
+const inboxLogger = logger.use('inbox')
+
 router.get('/actor', async ({ response, request }) => {
-  console.log('Request to /actor', request.ip())
+  logger.info(`Request to /actor from ip: ${request.ip()}`)
   const publicKey = fs.readFileSync('keys/public.pem', 'utf-8')
   response.header('Content-type', 'application/activity+json')
   return {
@@ -48,6 +50,10 @@ router.get('/.well-known/webfinger', async () => {
 })
 
 router.post('/inbox', async ({ request, response }) => {
+  inboxLogger.info(`Request to /inbox from ip: ${request.ip()}`)
+  inboxLogger.debug('Request Body', request.body())
+  inboxLogger.debug('Request Headers', request.headers())
+
   // TODO: We are missing security checks which would be required in a serious production application
   // For example:
   // "The request contains a Date header. Compare it with current date and time within a reasonable time window to prevent replay attacks.
@@ -56,29 +62,24 @@ router.post('/inbox', async ({ request, response }) => {
   // See https://blog.joinmastodon.org/2018/07/how-to-make-friends-and-verify-requests/
   const signatureHeader = request.header('Signature')
   if (!signatureHeader) {
-    console.log('Message has no signature, disregard')
+    inboxLogger.info('Disregarding inbox message missing signature header')
     return response.status(401).send({ error: 'Missing Signature Header' })
   }
 
   const signatureParts = signatureHeader
     .split(',')
     .map((signaturePart) => {
-      console.log('signaturePart', signaturePart)
       const keyValue = signaturePart.split(/=/)
       const key = keyValue[0]
       const valueQuoted = keyValue.slice(1).join('=')
-
-      console.log('key', key)
-      console.log('valueQuoted', valueQuoted)
       const stripQuotes = valueQuoted.replace(/^"/, '').replace(/"$/, '')
-      console.log('stripQuotes', stripQuotes)
       return { [key]: stripQuotes }
     })
     .reduce((acc, v) => {
       return Object.assign(acc, v)
     }, {})
 
-  console.log(signatureParts)
+  inboxLogger.info('Parsed Signature Header', signatureParts)
 
   const keyId = signatureParts.keyId
   const algorithm = signatureParts.algorithm
@@ -98,6 +99,7 @@ router.post('/inbox', async ({ request, response }) => {
   }
 
   if (algorithm && algorithm !== 'rsa-sha256') {
+    inboxLogger.info('Unsupported signing algorithm specified in signature header', algorithm)
     return response
       .status(401)
       .send({ error: 'Unsupported signing algorithm. I only know rsa-sha256' })
@@ -117,11 +119,13 @@ router.post('/inbox', async ({ request, response }) => {
     return response.status(401).send({ error: `Failed to fetch fetch ${keyId}` })
   }
 
+  inboxLogger.info('Signature header contained the key id', keyId)
   const keyResponseJson = (await keyResponse.json()) as any
-  console.log('keyResponseJson', keyResponseJson)
+  inboxLogger.info('Key id response is', keyResponseJson)
+
   const key = keyResponseJson.publicKey.publicKeyPem
-  console.log('key', key)
   if (!key) {
+    inboxLogger.info('Key id response did not contain public key')
     return response.status(401).send({ error: `Failed to fetch fetch ${keyId}` })
   }
 
@@ -136,11 +140,12 @@ router.post('/inbox', async ({ request, response }) => {
     })
     .join('\n')
 
-  console.log('comparisonString', comparisonString)
+  inboxLogger.info('We are using the comparison string:', comparisonString)
 
   const valid = verify('RSA-SHA256', Buffer.from(comparisonString, 'utf-8'), key, signature)
 
   if (!valid) {
+    inboxLogger.info('Failed to validate signature')
     return response.status(401).send({
       error: `Verification failed for ${request.header('host')} ${keyId}`,
       comparisonString,
@@ -148,7 +153,7 @@ router.post('/inbox', async ({ request, response }) => {
     })
   }
 
-  console.log('request', request.body())
+  inboxLogger.info('We have validated the message', request.body())
   return {}
 })
 
