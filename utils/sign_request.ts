@@ -14,7 +14,7 @@ export const signedRequest = async (
     ? `SHA-256=${createHash('sha256').update(documentAsString).digest('base64')}`
     : undefined
   const date = new Date().toUTCString()
-  const signedString = `(request-target): ${method.toLowerCase()} /${path}\nhost: ${host}\ndate: ${date}${document ? `\ndigest: ${digest}` : ''}`
+  const signedString = `(request-target): ${method.toLowerCase()} ${path}\nhost: ${host}\ndate: ${date}${document ? `\ndigest: ${digest}` : ''}`
 
   console.log('Signed String', signedString)
 
