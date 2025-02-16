@@ -13,7 +13,7 @@ export default class ActivtyPubSigningMiddleware {
     inboxLogger.info(request.headers(), 'Request Headers')
 
     const rawBody = request.raw()
-    if (!rawBody) {
+    if (!rawBody && request.method() !== 'GET') {
       inboxLogger.info('Missing raw body')
       return response.status(401).send({ error: 'Expected a request body' })
     }
@@ -52,7 +52,7 @@ export default class ActivtyPubSigningMiddleware {
     }
 
     const digestHeader = request.header('Digest')
-    if (!digestHeader) {
+    if (!digestHeader && request.raw()) {
       inboxLogger.info('Disregarding inbox message for missing digest')
       return response.status(401).send({ error: `Digest Header Not Found` })
     }
@@ -118,7 +118,8 @@ export default class ActivtyPubSigningMiddleware {
       return response.status(400).send({ error: `Expected Signature to contain a valid URL` })
     }
 
-    if (keyUrl.protocol !== 'https') {
+    // Allow HTTP KEYS for local testing only
+    if (keyUrl.protocol !== 'https' && !process.env.ALLOW_HTTP_KEYS) {
       inboxLogger.info({ keyUrl }, 'Key URL Protocol is not https')
 
       return response
@@ -137,19 +138,21 @@ export default class ActivtyPubSigningMiddleware {
     const hash = keyUrl.hash
 
     // Let's check if the KeyID matches the asserted actor
-    try {
-      const actorURL = new URL(assertedActor)
-      if (actorURL.host !== keyUrl.host) {
-        inboxLogger.info({ actorURL, keyUrl }, 'actor host does not match key url host')
+    if (request.method() !== 'GET') {
+      try {
+        const actorURL = new URL(assertedActor)
+        if (actorURL.host !== keyUrl.host) {
+          inboxLogger.info({ actorURL, keyUrl }, 'actor host does not match key url host')
+          return response
+            .status(400)
+            .send({ error: `Expected actor property to match key url ${assertedActor}` })
+        }
+      } catch {
+        inboxLogger.info({ assertedActor }, 'actor could not be parsed as a URL')
         return response
           .status(400)
-          .send({ error: `Expected actor property to match key url ${assertedActor}` })
+          .send({ error: `Expected actor property to be a valid URL ${assertedActor}` })
       }
-    } catch {
-      inboxLogger.info({ assertedActor }, 'actor could not be parsed as a URL')
-      return response
-        .status(400)
-        .send({ error: `Expected actor property to be a valid URL ${assertedActor}` })
     }
 
     const keyResponse = await signedRequest({
@@ -173,14 +176,12 @@ export default class ActivtyPubSigningMiddleware {
       inboxLogger.info('Key id response did not contain public key')
       return response.status(401).send({ error: `Failed to fetch fetch ${keyId}` })
     }
-    const expectedDigest = `SHA-256=${createHash('sha256').update(rawBody).digest('base64')}`
-
     // We are checking for the presence of mandatory headers in the comparison string we generate, ideally we would do this in a more structured way
     // which checks that any headers we use are included in the signature.
     const seenHeadersInSignature = {
       date: false,
       host: false,
-      digest: false,
+      digest: request.method() === 'GET' ? true : false,
       requestTarget: false,
     }
 
@@ -189,9 +190,10 @@ export default class ActivtyPubSigningMiddleware {
       .map((signedHeaderName) => {
         if (signedHeaderName === '(request-target)') {
           seenHeadersInSignature.requestTarget = true
-          return '(request-target): post /inbox'
+          return `(request-target): ${request.method().toLowerCase()} ${request.parsedUrl.pathname}`
         } else if (signedHeaderName === 'digest') {
           seenHeadersInSignature.digest = true
+          const expectedDigest = `SHA-256=${createHash('sha256').update(rawBody!).digest('base64')}`
           return `digest: ${expectedDigest}`
         } else {
           if (signedHeaderName === 'date') {
