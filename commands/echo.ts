@@ -21,7 +21,7 @@ export default class Echo extends BaseCommand {
     console.log('response', response.ok)
     console.log('response', response.status)
 
-    console.log('response', response.json())
+    console.log('response', await response.json())
     // const privateKey = fs.readFileSync('keys/private.pem')
     // const digest = `SHA-256=${createHash('sha256').update(document).digest('base64')}`
     // const date = new Date().toUTCString()

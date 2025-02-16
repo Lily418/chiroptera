@@ -161,6 +161,8 @@ router.post('/inbox', async ({ request, response }) => {
   }
 
   if (keyUrl.protocol !== 'https') {
+    inboxLogger.info({ keyUrl }, 'Key URL Protocol is not https')
+
     return response
       .status(400)
       .send({ error: `Expected Signature to contain a valid URL with https protocol` })
@@ -176,14 +178,14 @@ router.post('/inbox', async ({ request, response }) => {
   const path = keyUrl.pathname
   const hash = keyUrl.hash
 
-  // Let's check if the KeyID matches the actor
+  // Let's check if the KeyID matches the asserted actor
   try {
     const actorURL = new URL(assertedActor)
     if (actorURL.host !== keyUrl.host) {
-      inboxLogger.info({ actorURL, keyUrl }, 'actorURL')
+      inboxLogger.info({ actorURL, keyUrl }, 'actor host does not match key url host')
       return response
         .status(400)
-        .send({ error: `Expected actor property to be a valid URL ${assertedActor}` })
+        .send({ error: `Expected actor property to match key url ${assertedActor}` })
     }
   } catch {
     inboxLogger.info({ assertedActor }, 'actor could not be parsed as a URL')
