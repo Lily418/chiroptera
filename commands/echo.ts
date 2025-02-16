@@ -33,6 +33,7 @@ export default class Echo extends BaseCommand {
       signature +
       '"'
 
+    console.log('signedString', signedString)
     console.info('signature: %s', signature)
 
     // HTTP.headers({ 'Host': 'mastodon.social', 'Date': date, 'Signature': header, 'Digest': digest })
