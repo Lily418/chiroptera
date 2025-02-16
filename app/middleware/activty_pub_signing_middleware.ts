@@ -118,13 +118,13 @@ export default class ActivtyPubSigningMiddleware {
       return response.status(400).send({ error: `Expected Signature to contain a valid URL` })
     }
 
-    // if (keyUrl.protocol !== 'https') {
-    //   inboxLogger.info({ keyUrl }, 'Key URL Protocol is not https')
+    if (keyUrl.protocol !== 'https') {
+      inboxLogger.info({ keyUrl }, 'Key URL Protocol is not https')
 
-    //   return response
-    //     .status(400)
-    //     .send({ error: `Expected Signature to contain a valid URL with https protocol` })
-    // }
+      return response
+        .status(400)
+        .send({ error: `Expected Signature to contain a valid URL with https protocol` })
+    }
 
     if (keyUrl.hostname === '127.0.0.1' || keyUrl.hostname === 'localhost') {
       return response
