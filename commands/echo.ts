@@ -20,7 +20,7 @@ export default class Echo extends BaseCommand {
 
     const date = new Date().toUTCString()
 
-    const signedString = `(request-target): post /inbox\nhost: mastodon.social\ndate: ${date}\ndigest: ${digest}`
+    const signedString = `(request-target): post /inbox\nhost: lgbtqia.space\ndate: ${date}\ndigest: ${digest}`
 
     var signerObject = createSign('RSA-SHA256')
     signerObject.update(signedString)
@@ -37,14 +37,14 @@ export default class Echo extends BaseCommand {
     console.log('signedString', signedString)
     console.info('signature: %s', signature)
 
-    // HTTP.headers({ 'Host': 'mastodon.social', 'Date': date, 'Signature': header, 'Digest': digest })
-    // .post('https://mastodon.social/inbox', body: document)
+    // HTTP.headers({ 'Host': 'lgbtqia.space', 'Date': date, 'Signature': header, 'Digest': digest })
+    // .post('https://lgbtqia.space/inbox', body: document)
 
     const response = await fetch(
-      new Request('https://mastodon.social/inbox', {
+      new Request('https://lgbtqia.space/inbox', {
         method: 'POST',
         headers: {
-          Host: 'mastodon.social',
+          Host: 'lgbtqia.space',
           Date: date,
           Signature: header,
           Digest: digest,
