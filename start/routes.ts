@@ -99,6 +99,9 @@ router.post('/inbox', async ({ request, response }) => {
     return response.status(401).send({ error: `Digest Header Not Found` })
   }
 
+  const requestBody = request.body()
+  const assertedActor = requestBody.actor
+
   // TODO: We are missing security checks which would be required in a serious production application
   // While this proves the request comes from an actor, what if the payload contains an attribution to someone else? In reality you’d want to check that both are the same, otherwise one actor could forge messages from other people."
   // See https://blog.joinmastodon.org/2018/07/how-to-make-friends-and-verify-requests/
@@ -149,11 +152,45 @@ router.post('/inbox', async ({ request, response }) => {
 
   const signature = Buffer.from(signatureParts.signature, 'base64')
 
-  const keyUrl = new URL(keyId)
+  let keyUrl
+  try {
+    keyUrl = new URL(keyId)
+  } catch {
+    inboxLogger.info({ keyUrl }, 'Expected Signature to contain a valid URL')
+    return response.status(400).send({ error: `Expected Signature to contain a valid URL` })
+  }
+
+  if (keyUrl.protocol !== 'https') {
+    return response
+      .status(400)
+      .send({ error: `Expected Signature to contain a valid URL with https protocol` })
+  }
+
+  if (keyUrl.hostname === '127.0.0.1' || keyUrl.hostname === 'localhost') {
+    return response
+      .status(400)
+      .send({ error: `Expected Signature to contain a valid URL with https protocol` })
+  }
 
   const host = keyUrl.host
   const path = keyUrl.pathname
   const hash = keyUrl.hash
+
+  // Let's check if the KeyID matches the actor
+  try {
+    const actorURL = new URL(assertedActor)
+    if (actorURL.host !== keyUrl.host) {
+      inboxLogger.info({ actorURL, keyUrl }, 'actorURL')
+      return response
+        .status(400)
+        .send({ error: `Expected actor property to be a valid URL ${assertedActor}` })
+    }
+  } catch {
+    inboxLogger.info({ assertedActor }, 'actor could not be parsed as a URL')
+    return response
+      .status(400)
+      .send({ error: `Expected actor property to be a valid URL ${assertedActor}` })
+  }
 
   const keyResponse = await signedRequest({ host, path, protocol: 'https', method: 'GET', hash })
 
@@ -227,8 +264,6 @@ router.post('/inbox', async ({ request, response }) => {
       signature: signatureParts.signature,
     })
   }
-
-  const requestBody = request.body()
 
   inboxLogger.info(requestBody, 'We have validated the message')
   return {}
