@@ -13,7 +13,7 @@ export default class ActivtyPubSigningMiddleware {
     inboxLogger.info(request.headers(), 'Request Headers')
 
     const rawBody = request.raw()
-    if (!rawBody && request.method() !== 'GET') {
+    if (!rawBody) {
       inboxLogger.info('Missing raw body')
       return response.status(401).send({ error: 'Expected a request body' })
     }
@@ -138,21 +138,19 @@ export default class ActivtyPubSigningMiddleware {
     const hash = keyUrl.hash
 
     // Let's check if the KeyID matches the asserted actor
-    if (request.method() !== 'GET') {
-      try {
-        const actorURL = new URL(assertedActor)
-        if (actorURL.host !== keyUrl.host) {
-          inboxLogger.info({ actorURL, keyUrl }, 'actor host does not match key url host')
-          return response
-            .status(400)
-            .send({ error: `Expected actor property to match key url ${assertedActor}` })
-        }
-      } catch {
-        inboxLogger.info({ assertedActor }, 'actor could not be parsed as a URL')
+    try {
+      const actorURL = new URL(assertedActor)
+      if (actorURL.host !== keyUrl.host) {
+        inboxLogger.info({ actorURL, keyUrl }, 'actor host does not match key url host')
         return response
           .status(400)
-          .send({ error: `Expected actor property to be a valid URL ${assertedActor}` })
+          .send({ error: `Expected actor property to match key url ${assertedActor}` })
       }
+    } catch {
+      inboxLogger.info({ assertedActor }, 'actor could not be parsed as a URL')
+      return response
+        .status(400)
+        .send({ error: `Expected actor property to be a valid URL ${assertedActor}` })
     }
 
     const keyResponse = await signedRequest({
@@ -181,7 +179,7 @@ export default class ActivtyPubSigningMiddleware {
     const seenHeadersInSignature = {
       date: false,
       host: false,
-      digest: request.method() === 'GET' ? true : false,
+      digest: false,
       requestTarget: false,
     }
 
