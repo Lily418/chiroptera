@@ -20,7 +20,9 @@ export default class Echo extends BaseCommand {
 
     const date = new Date().toUTCString()
 
-    const signedString = `(request-target): post /inbox\nhost: lgbtqia.space\ndate: ${date}\ndigest: ${digest}`
+    const signedString = `(request-target): post /inbox\nhost: localhost:3333\ndate: ${date}\ndigest: ${digest}`
+
+    console.log('signedString', signedString)
 
     var signerObject = createSign('RSA-SHA256')
     signerObject.update(signedString)
@@ -37,25 +39,26 @@ export default class Echo extends BaseCommand {
     console.log('signedString', signedString)
     console.info('signature: %s', signature)
 
-    // HTTP.headers({ 'Host': 'lgbtqia.space', 'Date': date, 'Signature': header, 'Digest': digest })
-    // .post('https://lgbtqia.space/inbox', body: document)
-
-    const response = await fetch(
-      new Request('https://lgbtqia.space/inbox', {
-        method: 'POST',
-        headers: {
-          Host: 'lgbtqia.space',
-          Date: date,
-          Signature: header,
-          Digest: digest,
-        },
-        body: document,
-      })
-    )
-
-    console.log('response', response)
-    console.log('response.status', response.status)
-    console.log('response.ok', response.ok)
-    console.log('response.json', await response.json())
+    try {
+      const response = await fetch(
+        new Request('http://localhost:3333/inbox', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/activity+json',
+            'Host': 'localhost:3333',
+            'Date': date,
+            'Signature': header,
+            'Digest': digest,
+          },
+          body: document,
+        })
+      )
+      console.log('response', response)
+      console.log('response.status', response.status)
+      console.log('response.ok', response.ok)
+      console.log('response.json', await response.json())
+    } catch (e) {
+      console.log('e', e)
+    }
   }
 }
