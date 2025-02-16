@@ -30,6 +30,8 @@ router
   .group(() => {
     router.post('/inbox', async ({}) => {
       logger.info(`This message reached the inbox`)
+      // TODO: We have ensured that the actor is genuine but this doesn't not mean the actor has the permission to perform the action they are requesting, we must check this now
+      // This is also a good time to start using controllers here.
       return {}
     })
 
