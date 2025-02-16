@@ -51,8 +51,8 @@ router.get('/.well-known/webfinger', async () => {
 
 router.post('/inbox', async ({ request, response }) => {
   inboxLogger.info(`Request to /inbox from ip: ${request.ip()}`)
-  inboxLogger.debug('Request Body', request.body())
-  inboxLogger.debug('Request Headers', request.headers())
+  inboxLogger.debug(request.body(), 'Request Body')
+  inboxLogger.debug(request.headers(), 'Request Headers')
 
   // TODO: We are missing security checks which would be required in a serious production application
   // For example:
@@ -79,7 +79,7 @@ router.post('/inbox', async ({ request, response }) => {
       return Object.assign(acc, v)
     }, {})
 
-  inboxLogger.info('Parsed Signature Header', signatureParts)
+  inboxLogger.info(signatureParts, 'Parsed Signature Header')
 
   const keyId = signatureParts.keyId
   const algorithm = signatureParts.algorithm
@@ -99,7 +99,7 @@ router.post('/inbox', async ({ request, response }) => {
   }
 
   if (algorithm && algorithm !== 'rsa-sha256') {
-    inboxLogger.info('Unsupported signing algorithm specified in signature header', algorithm)
+    inboxLogger.info(algorithm, 'Unsupported signing algorithm specified in signature header')
     return response
       .status(401)
       .send({ error: 'Unsupported signing algorithm. I only know rsa-sha256' })
@@ -119,9 +119,9 @@ router.post('/inbox', async ({ request, response }) => {
     return response.status(401).send({ error: `Failed to fetch fetch ${keyId}` })
   }
 
-  inboxLogger.info('Signature header contained the key id', keyId)
+  inboxLogger.info(keyId, 'Signature header contained the key id')
   const keyResponseJson = (await keyResponse.json()) as any
-  inboxLogger.info('Key id response is', keyResponseJson)
+  inboxLogger.info(keyResponseJson, 'Key id response is')
 
   const key = keyResponseJson.publicKey.publicKeyPem
   if (!key) {
@@ -140,7 +140,7 @@ router.post('/inbox', async ({ request, response }) => {
     })
     .join('\n')
 
-  inboxLogger.info('We are using the comparison string:', comparisonString)
+  inboxLogger.info(comparisonString, 'We are using the comparison string:')
 
   const valid = verify('RSA-SHA256', Buffer.from(comparisonString, 'utf-8'), key, signature)
 
@@ -153,7 +153,7 @@ router.post('/inbox', async ({ request, response }) => {
     })
   }
 
-  inboxLogger.info('We have validated the message', request.body())
+  inboxLogger.info(request.body(), 'We have validated the message')
   return {}
 })
 
