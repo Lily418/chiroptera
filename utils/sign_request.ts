@@ -47,8 +47,5 @@ export const signedRequest = async (
       body: documentAsString,
     })
   )
-  console.log('response', response)
-  console.log('response.status', response.status)
-  console.log('response.ok', response.ok)
   return response
 }
