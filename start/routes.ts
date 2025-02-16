@@ -32,27 +32,27 @@ router
       logger.info(`This message reached the inbox`)
       return {}
     })
+
+    router.get('/actor', async ({ response, request }) => {
+      logger.info(`Request to /actor from ip: ${request.ip()}`)
+      const publicKey = fs.readFileSync('keys/public.pem', 'utf-8')
+      response.header('Content-type', 'application/activity+json')
+      return {
+        '@context': ['https://www.w3.org/ns/activitystreams', 'https://w3id.org/security/v1'],
+
+        'id': 'https://www.noticeboard.events/actor',
+        'type': 'Person',
+        'preferredUsername': 'lily418',
+        'inbox': 'https://www.noticeboard.events/inbox',
+
+        'publicKey': {
+          id: 'https://www.noticeboard.events/actor#main-key',
+          owner: 'https://www.noticeboard.events/actor',
+          publicKeyPem: publicKey,
+        },
+      }
+    })
   })
   .use(middleware.activtyPubSigning())
-
-router.get('/actor', async ({ response, request }) => {
-  logger.info(`Request to /actor from ip: ${request.ip()}`)
-  const publicKey = fs.readFileSync('keys/public.pem', 'utf-8')
-  response.header('Content-type', 'application/activity+json')
-  return {
-    '@context': ['https://www.w3.org/ns/activitystreams', 'https://w3id.org/security/v1'],
-
-    'id': 'https://www.noticeboard.events/actor',
-    'type': 'Person',
-    'preferredUsername': 'lily418',
-    'inbox': 'https://www.noticeboard.events/inbox',
-
-    'publicKey': {
-      id: 'https://www.noticeboard.events/actor#main-key',
-      owner: 'https://www.noticeboard.events/actor',
-      publicKeyPem: publicKey,
-    },
-  }
-})
 
 // router.on('/').renderInertia('home')
