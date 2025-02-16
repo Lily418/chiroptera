@@ -21,9 +21,12 @@ export default class Echo extends BaseCommand {
     const date = new Date().toUTCString()
     const signedString = `(request-target): post /inbox\nhost: mastodon.social\ndate: ${date}\ndigest: ${digest}`
 
-    var signerObject = createSign('SHA256')
+    var signerObject = createSign('RSA-SHA256')
     signerObject.update(signedString)
-    var signature = signerObject.sign({ key: privateKey }, 'base64')
+    var signature = signerObject.sign(
+      { key: privateKey, padding: constants.RSA_PKCS1_PADDING },
+      'base64'
+    )
 
     const header =
       'keyId="https://www.noticeboard.events/actor",headers="(request-target) host date digest",signature="' +
