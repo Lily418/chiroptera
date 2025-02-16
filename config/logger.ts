@@ -21,10 +21,16 @@ const loggerConfig = defineConfig({
           .toArray(),
       },
     },
-    inbox: {
+    activity_pub_signing: {
       enabled: true,
       name: 'inbox',
       level: env.get('LOG_LEVEL', 'info'),
+      transport: {
+        targets: targets()
+          .pushIf(!app.inProduction, targets.pretty())
+          .pushIf(app.inProduction, targets.file({ destination: 1 }))
+          .toArray(),
+      },
     },
   },
 })

@@ -1,7 +1,7 @@
 import fs from 'node:fs'
 import { BaseCommand } from '@adonisjs/core/ace'
 import type { CommandOptions } from '@adonisjs/core/types/ace'
-import { signedRequest } from '../utils/sign_request.js'
+import { signedRequest } from '../signing/sign_request.js'
 
 export default class Echo extends BaseCommand {
   static commandName = 'echo'
