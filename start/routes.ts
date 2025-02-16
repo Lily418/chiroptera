@@ -108,9 +108,10 @@ router.post('/inbox', async ({ request, response }) => {
   const keyUrl = new URL(keyId)
 
   const host = keyUrl.host
-  const path = `${keyUrl.pathname}${keyUrl.hash ?? ''}`
+  const path = keyUrl.pathname
+  const hash = keyUrl.hash
 
-  const keyResponse = await signedRequest(host, path, 'https', 'GET')
+  const keyResponse = await signedRequest({ host, path, protocol: 'https', method: 'GET', hash })
 
   //   console.log('response.status', keyResponse.status)
   console.log('keyResponse.ok', keyResponse.ok)

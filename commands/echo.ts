@@ -11,7 +11,13 @@ export default class Echo extends BaseCommand {
 
   async run() {
     const document = JSON.parse(fs.readFileSync('create-hello-world.json', 'utf-8'))
-    await signedRequest('localhost:3333', '/inbox', 'http', 'POST', document)
+    await signedRequest({
+      host: 'localhost:3333',
+      path: '/inbox',
+      protocol: 'http',
+      method: 'POST',
+      document: document,
+    })
     // const privateKey = fs.readFileSync('keys/private.pem')
     // const digest = `SHA-256=${createHash('sha256').update(document).digest('base64')}`
     // const date = new Date().toUTCString()

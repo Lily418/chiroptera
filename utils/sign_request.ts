@@ -1,13 +1,21 @@
 import fs from 'node:fs'
 import { createHash, createSign, constants } from 'node:crypto'
 
-export const signedRequest = async (
-  host: string,
-  path: string,
-  protocol: 'http' | 'https',
-  method: 'POST' | 'GET',
+export const signedRequest = async ({
+  host,
+  path,
+  hash,
+  protocol,
+  method,
+  document,
+}: {
+  host: string
+  path: string
+  hash?: string
+  protocol: 'http' | 'https'
+  method: 'POST' | 'GET'
   document?: Record<string, any>
-): Promise<Response> => {
+}): Promise<Response> => {
   const documentAsString = JSON.stringify(document)
   const privateKey = fs.readFileSync('keys/private.pem')
   const digest = document
@@ -43,7 +51,7 @@ export const signedRequest = async (
   }
 
   const response = await fetch(
-    new Request(`${protocol}://${host}${path}`, {
+    new Request(`${protocol}://${host}${path}${hash ?? ''}`, {
       method,
       headers: headers,
       body: documentAsString,
