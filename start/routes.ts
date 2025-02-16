@@ -11,6 +11,7 @@ import { base64 } from '@adonisjs/core/helpers'
 import router from '@adonisjs/core/services/router'
 import { verify } from 'node:crypto'
 import fs from 'node:fs'
+import { signedRequest } from '../utils/sign_request.js'
 
 router.get('/actor', async ({ response, request }) => {
   console.log('Request to /actor', request.ip())
@@ -80,6 +81,7 @@ router.post('/inbox', async ({ request, response }) => {
   console.log(signatureParts)
 
   const keyId = signatureParts.keyId
+  const algorithm = signatureParts.algorithm
   const headers = signatureParts.headers
   const signatureAsBase64 = signatureParts.signature
 
@@ -95,19 +97,31 @@ router.post('/inbox', async ({ request, response }) => {
     return response.status(401).send({ error: 'Missing Signature in Signature' })
   }
 
+  if (algorithm && algorithm !== 'rsa-sha256') {
+    return response
+      .status(401)
+      .send({ error: 'Unsupported signing algorithm. I only know rsa-sha256' })
+  }
+
   const signature = Buffer.from(signatureParts.signature, 'base64')
 
-  const keyResponse = await fetch(
-    new Request(keyId, {
-      method: 'GET',
-    })
-  )
+  const keyUrl = new URL(keyId)
+
+  const host = keyUrl.host
+  const path = `${keyUrl.pathname}${keyUrl.hash ?? ''}`
+
+  const keyResponse = await signedRequest(host, path, 'https', 'GET')
+
+  //   console.log('response.status', keyResponse.status)
+  //   console.log('keyResponse.ok', keyResponse.ok)
+  //   console.log('keyResponse.json', await keyResponse.json())
 
   if (!keyResponse.ok) {
     return response.status(401).send({ error: `Failed to fetch fetch ${keyId}` })
   }
 
   const keyResponseJson = (await keyResponse.json()) as any
+  console.log('keyResponseJson', keyResponseJson)
   const key = keyResponseJson.publicKey.publicKeyPem
   console.log('key', key)
   if (!key) {

@@ -1,15 +1,15 @@
 {
     "@context": "https://www.w3.org/ns/activitystreams",
-    "id": "https://www.noticeboard.events/create-hello-world",
+    "id": "https://www.noticeboard.events/create-hello-world-2",
     "type": "Create",
     "actor": "https://www.noticeboard.events/actor",
     "object": {
-        "id": "https://www.noticeboard.events/hello-world",
+        "id": "https://www.noticeboard.events/hello-world-2",
         "type": "Note",
-        "published": "2025-02-15T21:05:11Z",
+        "published": "2025-02-16T15:59:11Z",
         "attributedTo": "https://www.noticeboard.events/actor",
         "inReplyTo": "https://lgbtqia.space/@PurpleOrchid/114009921890763467",
-        "content": "<p>Hello world</p>",
+        "content": "<p>Hello Gerbil</p>",
         "to": "https://www.w3.org/ns/activitystreams#Public"
     }
 }
