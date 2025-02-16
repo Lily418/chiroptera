@@ -161,7 +161,7 @@ router.post('/inbox', async ({ request, response }) => {
     return response.status(401).send({ error: `Failed to fetch fetch ${keyId}` })
   }
 
-  inboxLogger.info(keyId, 'Signature header contained the key id')
+  inboxLogger.info({ keyId }, 'Signature header contained the key id')
   const keyResponseJson = (await keyResponse.json()) as any
   inboxLogger.info(keyResponseJson, 'Key id response is')
 
@@ -215,7 +215,7 @@ router.post('/inbox', async ({ request, response }) => {
     })
   }
 
-  inboxLogger.info(comparisonString, 'We are using the comparison string:')
+  inboxLogger.info({ comparisonString }, 'We are using the comparison string:')
 
   const valid = verify('RSA-SHA256', Buffer.from(comparisonString, 'utf-8'), key, signature)
 

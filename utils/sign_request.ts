@@ -24,8 +24,6 @@ export const signedRequest = async ({
   const date = new Date().toUTCString()
   const signedString = `(request-target): ${method.toLowerCase()} ${path}\nhost: ${host}\ndate: ${date}${document ? `\ndigest: ${digest}` : ''}`
 
-  console.log('Signed String', signedString)
-
   var signerObject = createSign('RSA-SHA256')
   signerObject.update(signedString)
   var signature = signerObject.sign(
@@ -57,5 +55,6 @@ export const signedRequest = async ({
       body: documentAsString,
     })
   )
+
   return response
 }
