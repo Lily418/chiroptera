@@ -1,7 +1,7 @@
 import fs from 'node:fs'
 import { BaseCommand } from '@adonisjs/core/ace'
 import type { CommandOptions } from '@adonisjs/core/types/ace'
-import { signedRequest } from '../signing/sign_request.js'
+import { sendSignedRequest } from '../signing/sign_request.js'
 
 export default class Echo extends BaseCommand {
   static commandName = 'echo'
@@ -11,7 +11,8 @@ export default class Echo extends BaseCommand {
 
   async run() {
     const document = JSON.parse(fs.readFileSync('create-hello-world.json', 'utf-8'))
-    const response = await signedRequest({
+    const response = await sendSignedRequest({
+      keyId: 'https://www.noticeboard.events/actor',
       host: 'localhost:3333',
       path: '/inbox',
       protocol: 'http',

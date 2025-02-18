@@ -2,7 +2,7 @@ import type { HttpContext } from '@adonisjs/core/http'
 import logger from '@adonisjs/core/services/logger'
 import type { NextFn } from '@adonisjs/core/types/http'
 import { createHash, verify } from 'node:crypto'
-import { signedRequest } from '../../signing/sign_request.js'
+import { sendSignedRequest } from '../../signing/sign_request.js'
 
 const inboxLogger = logger.use('activity_pub_signing')
 
@@ -34,9 +34,7 @@ export default class ActivtyPubSigningMiddleware {
     const currentTime = new Date()
 
     if (Number.isNaN(parsedDateInHeader)) {
-      return response
-        .status(401)
-        .send({ error: `Date Header Could Not Be Parsed ${parsedDateInHeader}` })
+      return response.status(401).send({ error: `Date Header Could Not Be Parsed ${dateHeader}` })
     }
     if (
       parsedDateInHeader < currentTime.setMinutes(currentTime.getMinutes() - 1) ||
@@ -124,21 +122,13 @@ export default class ActivtyPubSigningMiddleware {
         .send({ error: `Expected Signature to contain a valid URL with https protocol` })
     }
 
-    if (keyUrl.hostname === '127.0.0.1' || keyUrl.hostname === 'localhost') {
-      inboxLogger.info({ keyUrl }, 'Key URL Protocol is localhost')
-
-      return response
-        .status(400)
-        .send({ error: `Expected Signature to contain a valid URL with https protocol` })
-    }
-
     // Check for loop
-    if (keyUrl.hostname === process.env.HOST) {
-      inboxLogger.info({ keyUrl }, 'Key URL Protocol is same host')
-      return response
-        .status(400)
-        .send({ error: `Expected Signature to contain a valid URL which is not the current host` })
-    }
+    // if (keyUrl.hostname === process.env.HOST) {
+    //   inboxLogger.info({ keyUrl }, 'Key URL Protocol is same host')
+    //   return response
+    //     .status(400)
+    //     .send({ error: `Expected Signature to contain a valid URL which is not the current host` })
+    // }
 
     const host = keyUrl.host
     const path = keyUrl.pathname
@@ -161,11 +151,16 @@ export default class ActivtyPubSigningMiddleware {
           .send({ error: `Expected actor property to be a valid URL ${assertedActor}` })
       }
     }
+    logger.info('About to send signed request')
 
-    const keyResponse = await signedRequest({
+    const keyResponse = await sendSignedRequest({
+      keyId:
+        process.env.HOST === 'localhost'
+          ? `http://localhost:${process.env.PORT}/actor`
+          : `https://${process.env.HOST}/actor`,
       host,
       path,
-      protocol: 'https',
+      protocol: process.env.HOST === 'localhost' ? 'http' : 'https',
       method: 'GET',
       hash,
     })

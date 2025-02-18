@@ -1,26 +1,29 @@
 import fs from 'node:fs'
 import { createHash, createSign, constants } from 'node:crypto'
+import logger from '@adonisjs/core/services/logger'
 
-export const signedRequest = async ({
+export const createSignedMessage = ({
+  keyId,
   host,
   path,
-  hash,
-  protocol,
   method,
   document,
 }: {
+  keyId: string
   host: string
   path: string
-  hash?: string
-  protocol: 'http' | 'https'
   method: 'POST' | 'GET'
   document?: Record<string, any>
-}): Promise<Response> => {
+}): {
+  documentAsString: string
+  headers: Record<string, string>
+} => {
   const documentAsString = JSON.stringify(document)
   const privateKey = fs.readFileSync('keys/private.pem')
   const digest = document
     ? `SHA-256=${createHash('sha256').update(documentAsString).digest('base64')}`
     : undefined
+
   const date = new Date().toUTCString()
   const signedString = `(request-target): ${method.toLowerCase()} ${path}\nhost: ${host}\ndate: ${date}${document ? `\ndigest: ${digest}` : ''}`
 
@@ -32,7 +35,7 @@ export const signedRequest = async ({
   )
 
   const header =
-    `keyId="https://www.noticeboard.events/actor",headers="(request-target) host date${document ? ' digest' : ''}",signature="` +
+    `keyId="${keyId}",headers="(request-target) host date${document ? ' digest' : ''}",signature="` +
     signature +
     '"'
 
@@ -48,6 +51,38 @@ export const signedRequest = async ({
     headers['Digest'] = digest
   }
 
+  return {
+    documentAsString,
+    headers,
+  }
+}
+
+export const sendSignedRequest = async ({
+  keyId,
+  host,
+  path,
+  hash,
+  protocol,
+  method,
+  document,
+}: {
+  keyId: string
+  host: string
+  path: string
+  hash?: string
+  protocol: 'http' | 'https'
+  method: 'POST' | 'GET'
+  document?: Record<string, any>
+}): Promise<Response> => {
+  const { documentAsString, headers } = createSignedMessage({
+    keyId,
+    host,
+    path,
+    method,
+    document,
+  })
+
+  logger.info(`${protocol}://${host}${path}${hash ?? ''}`, 'About to fetch')
   const response = await fetch(
     new Request(`${protocol}://${host}${path}${hash ?? ''}`, {
       method,
@@ -55,6 +90,8 @@ export const signedRequest = async ({
       body: documentAsString,
     })
   )
+
+  logger.info(response, 'response')
 
   return response
 }

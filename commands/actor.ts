@@ -1,7 +1,7 @@
 import fs from 'node:fs'
 import { BaseCommand } from '@adonisjs/core/ace'
 import type { CommandOptions } from '@adonisjs/core/types/ace'
-import { signedRequest } from '../signing/sign_request.js'
+import { sendSignedRequest } from '../signing/sign_request.js'
 
 export default class Echo extends BaseCommand {
   static commandName = 'actor'
@@ -10,7 +10,8 @@ export default class Echo extends BaseCommand {
   static options: CommandOptions = {}
 
   async run() {
-    const response = await signedRequest({
+    const response = await sendSignedRequest({
+      keyId: 'http://localhost:3333/actor',
       host: 'localhost:3333',
       path: '/actor',
       protocol: 'http',
