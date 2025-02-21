@@ -1,78 +1,166 @@
-import type { HttpContext } from '@adonisjs/core/http'
+import type { HttpContext, Request } from '@adonisjs/core/http'
 import logger from '@adonisjs/core/services/logger'
 import type { NextFn } from '@adonisjs/core/types/http'
 import { createHash, verify } from 'node:crypto'
 import { sendSignedRequest } from '../../signing/sign_request.js'
+import { inboxBodyValidator, inboxHeadersValidator } from '#validators/inbox'
 
 const inboxLogger = logger.use('activity_pub_signing')
 
-export default class ActivtyPubSigningMiddleware {
-  async handle({ request, response }: HttpContext, next: NextFn) {
-    inboxLogger.info(`Request to /inbox from ip: ${request.ip()}`)
-    inboxLogger.info(request.body(), 'Request Body')
-    inboxLogger.info(request.headers(), 'Request Headers')
+const logRequest = ({ request }: { request: Request }) => {
+  inboxLogger.info(`Request to /inbox from ip: ${request.ip()}`)
+  inboxLogger.info(request.body(), 'Request Body')
+  inboxLogger.info(request.headers(), 'Request Headers')
+}
 
-    const rawBody = request.raw()
-    if (!rawBody && request.method() !== 'GET') {
-      inboxLogger.info('Missing raw body')
-      return response.status(401).send({ error: 'Expected a request body' })
+const validateHeaders = async ({
+  request,
+}: {
+  request: Request
+}): Promise<{ signature: string; date: string; digest: string }> => {
+  return await inboxHeadersValidator.validate(request.headers())
+}
+
+const validateBody = async ({ request }: { request: Request }) => {
+  return await inboxBodyValidator.validate(request.body())
+}
+
+const validateDate = ({
+  dateHeader: dateInHeader,
+  currentDate: currentTime = new Date(),
+}: {
+  dateHeader: string
+  currentDate?: Date
+}): { ok: boolean; message?: string } => {
+  const parsedDateInHeader = Date.parse(dateInHeader)
+  if (Number.isNaN(parsedDateInHeader)) {
+    return {
+      ok: false,
+      message: `Date Header Could Not Be Parsed`,
     }
+  }
 
-    const signatureHeader = request.header('Signature')
-    if (!signatureHeader) {
-      inboxLogger.info('Disregarding inbox message missing signature header')
-      return response.status(401).send({ error: 'Missing Signature Header' })
-    }
-
-    const dateHeader = request.header('Date')
-    if (!dateHeader) {
-      inboxLogger.info('Disregarding inbox message for Missing Date Header')
-      return response.status(401).send({ error: 'Missing Date Header' })
-    }
-
-    const parsedDateInHeader = Date.parse(dateHeader)
-    const currentTime = new Date()
-
-    if (Number.isNaN(parsedDateInHeader)) {
-      return response.status(401).send({ error: `Date Header Could Not Be Parsed ${dateHeader}` })
-    }
-    if (
-      parsedDateInHeader < currentTime.setMinutes(currentTime.getMinutes() - 1) ||
-      parsedDateInHeader > currentTime.setMinutes(currentTime.getMinutes() + 1)
-    ) {
-      inboxLogger.info(
-        {
-          dateHeader: new Date(parsedDateInHeader).toUTCString(),
-          currentTime: currentTime.toUTCString(),
-        },
-        'Disregarding inbox message for Missing Date Header'
-      )
-
-      return response.status(401).send({
-        error: `Date Header Not Within Minute of Server Time.`,
+  if (
+    parsedDateInHeader < currentTime.setMinutes(currentTime.getMinutes() - 1) ||
+    parsedDateInHeader > currentTime.setMinutes(currentTime.getMinutes() + 1)
+  ) {
+    inboxLogger.info(
+      {
         dateHeader: new Date(parsedDateInHeader).toUTCString(),
         currentTime: currentTime.toUTCString(),
-      })
+      },
+      'Disregarding inbox message for Date Header Not Within Minute of Server Time'
+    )
+
+    return {
+      ok: false,
+      message: `Date Header Not Within Minute of Server Time.`,
+    }
+  }
+
+  return {
+    ok: true,
+  }
+}
+
+const validateSignatureParts = ({
+  keyId,
+  headers,
+  signatureAsBase64,
+  algorithm,
+}: {
+  keyId: string
+  headers: string
+  signatureAsBase64: string
+  algorithm: string
+}): {
+  ok: boolean
+  message?: string
+} => {
+  if (!keyId) {
+    return { ok: false, message: 'Missing Key Id in Signature' }
+  }
+
+  let keyUrl: URL
+  try {
+    keyUrl = new URL(keyId)
+  } catch {
+    inboxLogger.info({ keyId }, 'Expected Signature to contain a valid URL')
+    return { ok: false, message: `Expected Signature to contain a valid URL` }
+  }
+
+  // Allow HTTP KEYS for local testing only
+  if (keyUrl.protocol !== 'https:' && process.env.ALLOW_HTTP_KEYS !== 'true') {
+    inboxLogger.info({ keyUrl }, 'Key URL Protocol is not https')
+
+    return { ok: false, message: `Expected Signature to contain a valid URL with https protocol` }
+  }
+
+  if (!headers) {
+    return { ok: false, message: 'Missing Headers in Signature' }
+  }
+
+  if (!signatureAsBase64) {
+    return { ok: false, message: 'Missing Signature in Signature' }
+  }
+
+  if (algorithm && algorithm !== 'rsa-sha256') {
+    inboxLogger.info(algorithm, 'Unsupported signing algorithm specified in signature header')
+    return { ok: false, message: 'Unsupported signing algorithm. I only know rsa-sha256' }
+  }
+
+  if (!signatureAsBase64.match(/^[A-Za-z0-9+\/=]+=$/)) {
+    inboxLogger.info(
+      { signature: signatureAsBase64 },
+      'Expected Signature to be a Base64 Encoded string'
+    )
+    return { ok: false, message: `Expected Signature to be a Base64 Encoded string` }
+  }
+
+  return { ok: true }
+}
+
+export default class ActivtyPubSigningMiddleware {
+  async handle({ request, response }: HttpContext, next: NextFn) {
+    logRequest({ request })
+
+    let knownHeaders: {
+      signature: string
+      date: string
+      digest: string
     }
 
-    const digestHeader = request.header('Digest')
-    if (!digestHeader && request.raw()) {
-      inboxLogger.info('Disregarding inbox message for missing digest')
-      return response.status(401).send({ error: `Digest Header Not Found` })
+    try {
+      knownHeaders = await validateHeaders({ request })
+    } catch (e) {
+      logger.info(e, 'Vine header validation error')
+      return response
+        .status(400)
+        .send({ error: 'Request headers failed to validate', messages: e.messages })
+    }
+
+    try {
+      await validateBody({ request })
+    } catch (e) {
+      logger.info(e, 'Vine header validation error')
+      return response
+        .status(400)
+        .send({ error: 'Request body failed to validate', messages: e.messages })
+    }
+
+    const dateValidation = validateDate({
+      dateHeader: knownHeaders.date,
+      currentDate: new Date(),
+    })
+
+    if (!dateValidation.ok) {
+      return response.status(401).send({ error: dateValidation.message })
     }
 
     const requestBody = request.body()
     const assertedActor = requestBody.actor
 
-    if (!signatureHeader.match(/([a-zA-Z]+="[^"]+",?)+/)) {
-      inboxLogger.info(
-        { signatureHeader },
-        'Disregarding inbox message for badly formatted Signature header'
-      )
-      return response.status(401).send({ error: `Signature not properly formatted` })
-    }
-
-    const signatureParts = signatureHeader
+    const signatureParts = knownHeaders.signature
       .split(',')
       .map((signaturePart) => {
         const keyValue = signaturePart.split(/=/)
@@ -92,83 +180,101 @@ export default class ActivtyPubSigningMiddleware {
     const headers = signatureParts.headers
     const signatureAsBase64 = signatureParts.signature
 
-    if (!keyId) {
-      return response.status(401).send({ error: 'Missing Key Id in Signature' })
+    const signatureValidation = validateSignatureParts({
+      keyId,
+      algorithm,
+      headers,
+      signatureAsBase64,
+    })
+
+    if (!signatureValidation.ok) {
+      return response.status(401).send({ error: signatureValidation.message })
     }
 
-    if (!headers) {
-      return response.status(401).send({ error: 'Missing Headers in Signature' })
-    }
-
-    if (!signatureAsBase64) {
-      return response.status(401).send({ error: 'Missing Signature in Signature' })
-    }
-
-    if (algorithm && algorithm !== 'rsa-sha256') {
-      inboxLogger.info(algorithm, 'Unsupported signing algorithm specified in signature header')
-      return response
-        .status(401)
-        .send({ error: 'Unsupported signing algorithm. I only know rsa-sha256' })
-    }
-
-    const signature = Buffer.from(signatureParts.signature, 'base64')
-
-    let keyUrl
-    try {
-      keyUrl = new URL(keyId)
-    } catch {
-      inboxLogger.info({ keyUrl }, 'Expected Signature to contain a valid URL')
-      return response.status(400).send({ error: `Expected Signature to contain a valid URL` })
-    }
-
-    // Allow HTTP KEYS for local testing only
-    if (keyUrl.protocol !== 'https:' && !process.env.ALLOW_HTTP_KEYS) {
-      inboxLogger.info({ keyUrl }, 'Key URL Protocol is not https')
-
-      return response
-        .status(400)
-        .send({ error: `Expected Signature to contain a valid URL with https protocol` })
-    }
-
-    // Check for loop
-    // if (keyUrl.hostname === process.env.HOST) {
-    //   inboxLogger.info({ keyUrl }, 'Key URL Protocol is same host')
-    //   return response
-    //     .status(400)
-    //     .send({ error: `Expected Signature to contain a valid URL which is not the current host` })
-    // }
-
+    const keyUrl = new URL(keyId)
     const host = keyUrl.host
     const path = keyUrl.pathname
     const hash = keyUrl.hash
 
     // Let's check if the KeyID matches the asserted actor
-    if (request.method() !== 'GET') {
-      try {
-        const actorURL = new URL(assertedActor)
-        if (actorURL.host !== keyUrl.host) {
-          inboxLogger.info({ actorURL, keyUrl }, 'actor host does not match key url host')
-          return response
-            .status(400)
-            .send({ error: `Expected actor property to match key url ${assertedActor}` })
-        }
-      } catch {
-        inboxLogger.info({ assertedActor }, 'actor could not be parsed as a URL')
-        return response
-          .status(400)
-          .send({ error: `Expected actor property to be a valid URL ${assertedActor}` })
+    try {
+      const actorURL = new URL(assertedActor)
+      if (actorURL.origin !== keyUrl.origin) {
+        inboxLogger.info({ actorURL, keyUrl }, 'actor origin does not match key url origin')
+        return response.status(401).send({ error: `Expected actor property to match key url` })
       }
+    } catch {
+      inboxLogger.info({ assertedActor }, 'actor could not be parsed as a URL')
+      return response.status(401).send({ error: `Expected actor property to be a valid URL` })
     }
+
+    const seenHeadersInSignature = {
+      date: false,
+      host: false,
+      digest: false,
+      requestTarget: false,
+    }
+
+    const rawBody = request.raw()
+    let comparisonString
+    try {
+      comparisonString = headers
+        .split(' ')
+        .map((signedHeaderName) => {
+          if (signedHeaderName === '(request-target)') {
+            seenHeadersInSignature.requestTarget = true
+            return `(request-target): ${request.method().toLowerCase()} ${request.parsedUrl.pathname}`
+          } else if (signedHeaderName === 'digest') {
+            seenHeadersInSignature.digest = true
+            const expectedDigest = `SHA-256=${createHash('sha256').update(rawBody!).digest('base64')}`
+            return `digest: ${expectedDigest}`
+          } else {
+            const headerValue = request.header(
+              String(signedHeaderName).charAt(0).toUpperCase() + String(signedHeaderName).slice(1)
+            )
+
+            if (typeof headerValue === 'undefined') {
+              throw new Error('Missing header value')
+            }
+
+            if (signedHeaderName === 'date') {
+              seenHeadersInSignature.date = true
+            }
+
+            if (signedHeaderName === 'host') {
+              seenHeadersInSignature.host = true
+            }
+
+            return `${signedHeaderName}: ${headerValue}`
+          }
+        })
+        .join('\n')
+    } catch {
+      return response.status(401).send({ error: `Signature includes missing header` })
+    }
+
+    const anyRequiredHeadersMissingInSignature = Object.values(seenHeadersInSignature).some(
+      (v) => v !== true
+    )
+
+    if (anyRequiredHeadersMissingInSignature) {
+      inboxLogger.info(seenHeadersInSignature, 'Missing Headers In Signature')
+      return response.status(401).send({
+        error: `Signature is missing one or more required headers`,
+      })
+    }
+
     logger.info('About to send signed request')
 
+    const useHttp = process.env.HOST === 'localhost' && process.env.ALLOW_HTTP_KEYS === 'true'
+
     const keyResponse = await sendSignedRequest({
-      keyId:
-        process.env.HOST === 'localhost'
-          ? `http://localhost:${process.env.PORT}/actor`
-          : `https://${process.env.HOST}/actor`,
+      keyId: useHttp
+        ? `http://localhost:${process.env.PORT}/actor`
+        : `https://${process.env.HOST}/actor`,
       host,
       path,
-      protocol: process.env.HOST === 'localhost' ? 'http' : 'https',
+      protocol: useHttp ? 'http' : 'https',
       method: 'GET',
       hash,
     })
@@ -186,58 +292,16 @@ export default class ActivtyPubSigningMiddleware {
       inboxLogger.info('Key id response did not contain public key')
       return response.status(401).send({ error: `Failed to fetch fetch ${keyId}` })
     }
-    // We are checking for the presence of mandatory headers in the comparison string we generate, ideally we would do this in a more structured way
-    // which checks that any headers we use are included in the signature.
-    const seenHeadersInSignature = {
-      date: false,
-      host: false,
-      digest: request.method() === 'GET' ? true : false,
-      requestTarget: false,
-    }
-
-    const comparisonString = headers
-      .split(' ')
-      .map((signedHeaderName) => {
-        if (signedHeaderName === '(request-target)') {
-          seenHeadersInSignature.requestTarget = true
-          return `(request-target): ${request.method().toLowerCase()} ${request.parsedUrl.pathname}`
-        } else if (signedHeaderName === 'digest') {
-          seenHeadersInSignature.digest = true
-          const expectedDigest = `SHA-256=${createHash('sha256').update(rawBody!).digest('base64')}`
-          return `digest: ${expectedDigest}`
-        } else {
-          if (signedHeaderName === 'date') {
-            seenHeadersInSignature.date = true
-          }
-
-          if (signedHeaderName === 'host') {
-            seenHeadersInSignature.host = true
-          }
-
-          return `${signedHeaderName}: ${request.header(String(signedHeaderName).charAt(0).toUpperCase() + String(signedHeaderName).slice(1))}`
-        }
-      })
-      .join('\n')
-
-    const anyRequiredHeadersMissingInSignature = Object.values(seenHeadersInSignature).some(
-      (v) => v !== true
-    )
-
-    if (anyRequiredHeadersMissingInSignature) {
-      inboxLogger.info(seenHeadersInSignature, 'Missing Headers In Signature')
-      return response.status(401).send({
-        error: `Signature is missing one or more required headers`,
-      })
-    }
 
     inboxLogger.info({ comparisonString }, 'We are using the comparison string:')
 
+    const signature = Buffer.from(signatureAsBase64, 'base64')
     const valid = verify('RSA-SHA256', Buffer.from(comparisonString, 'utf-8'), key, signature)
 
     if (!valid) {
       inboxLogger.info('Failed to validate signature')
       return response.status(401).send({
-        error: `Verification failed for ${request.header('host')} ${keyId}`,
+        error: `Verification failed`,
         comparisonString,
         signature: signatureParts.signature,
       })
