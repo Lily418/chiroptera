@@ -64,6 +64,14 @@ export default class ActivtyPubSigningMiddleware {
     const requestBody = request.body()
     const assertedActor = requestBody.actor
 
+    if (!signatureHeader.match(/([a-zA-Z]+="[^"]+",?)+/)) {
+      inboxLogger.info(
+        { signatureHeader },
+        'Disregarding inbox message for badly formatted Signature header'
+      )
+      return response.status(401).send({ error: `Signature not properly formatted` })
+    }
+
     const signatureParts = signatureHeader
       .split(',')
       .map((signaturePart) => {

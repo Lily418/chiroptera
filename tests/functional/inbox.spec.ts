@@ -101,5 +101,51 @@ test.group('Inbox', () => {
     })
   })
 
-  // TODO - Continue
+  test('should 401 if a message with a body which does not have a digest', async ({
+    client,
+    assert,
+  }) => {
+    const { documentAsString, headers } = createSignedMessage({
+      keyId: 'http://localhost:3333/actor',
+      host: process.env.HOST as string,
+      path: '/inbox',
+      method: 'POST',
+      document: {
+        actor: 'http://localhost:3333',
+      },
+    })
+
+    delete headers['Digest']
+
+    const response = await client.post('/inbox').json(documentAsString).headers(headers)
+    response.assertStatus(401)
+    assert.containsSubset(response.body(), {
+      error: `Digest Header Not Found`,
+    })
+  })
+
+  test('should 401 if Signature is not properly formatted', async ({
+    client,
+    assert,
+  }, signature) => {
+    const { documentAsString, headers } = createSignedMessage({
+      keyId: 'http://localhost:3333/actor',
+      host: process.env.HOST as string,
+      path: '/inbox',
+      method: 'POST',
+      document: {
+        actor: 'http://localhost:3333',
+      },
+    })
+
+    headers['Signature'] = signature as any as string
+
+    const response = await client.post('/inbox').json(documentAsString).headers(headers)
+    response.assertStatus(401)
+    assert.containsSubset(response.body(), {
+      error: `Signature not properly formatted`,
+    })
+  }).with(['keyId=foo', '1="5"', 's='])
+
+  test('')
 })
