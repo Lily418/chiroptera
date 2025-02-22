@@ -27,6 +27,7 @@ const handleCreateNote = async ({
 }: Pick<HttpContext, 'request' | 'response'>) => {
   const body = request.body()
   const actorUrl = new URL(body.actor)
+  const attributedTo = body.object.attributedTo
   const attributedUrl = new URL(body.object.attributedTo)
 
   if (actorUrl.origin !== attributedUrl.origin) {
@@ -34,10 +35,10 @@ const handleCreateNote = async ({
     return response.status(401).send({ error: 'Actor does not match attributed' })
   }
 
-  let actor = await Actor.find(attributedUrl)
+  let actor = await Actor.find(attributedTo)
   if (!actor) {
     actor = await Actor.create({
-      id: body.object.attributedTo,
+      id: attributedTo,
     })
   }
 
