@@ -25,7 +25,7 @@ const validateBody = async ({ request }: { request: Request }) => {
   return await inboxBodyValidator.validate(request.body())
 }
 
-const validateDate = ({
+export const validateDate = ({
   dateHeader: dateInHeader,
   currentDate: currentTime = new Date(),
 }: {

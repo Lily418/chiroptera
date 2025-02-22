@@ -13,7 +13,7 @@ export const inboxBodyValidator = vine.compile(vine.object({}))
 export const inboxActivityStreamValidator = vine.compile(
   vine.object({
     '@context': vine.unionOfTypes([
-      vine.literal('https://www.w3.org/ns/activitystreams'),
+      vine.string().sameAs('https://www.w3.org/ns/activitystreams'),
       vine.array(vine.any()),
     ]),
   })
