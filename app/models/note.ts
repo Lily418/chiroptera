@@ -17,5 +17,8 @@ export default class Note extends BaseModel {
   declare attributedTo: BelongsTo<typeof Actor>
 
   @column()
+  declare attributedToId: string
+
+  @column()
   declare content: string
 }

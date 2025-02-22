@@ -14,7 +14,7 @@ export default class Actor extends BaseModel {
   declare updatedAt: DateTime
 
   @hasMany(() => Note, {
-    foreignKey: 'attributed_to',
+    foreignKey: 'attributedToId',
   })
   declare notes: relations.HasMany<typeof Note>
 }
