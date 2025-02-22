@@ -1,3 +1,6 @@
+import Actor from '#models/actor'
+import Generic from '#models/generic'
+import Note from '#models/note'
 import { inboxActivityStreamValidator } from '#validators/inbox'
 import type { HttpContext } from '@adonisjs/core/http'
 import logger from '@adonisjs/core/services/logger'
@@ -18,15 +21,76 @@ const additionalContextValidation = ({
   return true
 }
 
+const handleCreateNote = async ({
+  request,
+  response,
+}: Pick<HttpContext, 'request' | 'response'>) => {
+  const body = request.body()
+  const actorUrl = new URL(body.actor)
+  const attributedUrl = new URL(body.object.attributedTo)
+
+  if (actorUrl.origin !== attributedUrl.origin) {
+    logger.info({ actorUrl, attributedUrl }, 'Actor does not match attributed')
+    return response.status(401).send({ error: 'Actor does not match attributed' })
+  }
+
+  let actor = await Actor.find(attributedUrl)
+  if (!actor) {
+    actor = await Actor.create({
+      id: body.object.attributedTo,
+    })
+  }
+
+  actor.related('notes').create({
+    content: body.object.content,
+  })
+
+  return response.status(200).send({})
+}
+
+const handleCreate = async ({ request, response }: Pick<HttpContext, 'request' | 'response'>) => {
+  const body = request.body()
+  const createType = body.object.type
+
+  switch (createType) {
+    case 'Note':
+      handleCreateNote({ request, response })
+      break
+    default:
+      handleGeneric({ request, response })
+      return
+  }
+  await Generic.create({
+    message: body,
+  })
+  return response.status(200).send({})
+}
+
+const handleGeneric = async ({ request, response }: Pick<HttpContext, 'request' | 'response'>) => {
+  const body = request.body()
+
+  await Generic.create({
+    message: body,
+  })
+
+  return response.status(200).send({})
+}
+
 export default class InboxController {
   async post({ request, response }: HttpContext) {
-    // TODO: We have ensured that the actor is genuine but this doesn't not mean the actor has the permission to perform the action they are requesting, we must check this now
     const body = request.body()
     await inboxActivityStreamValidator.validate(body)
     if (!additionalContextValidation({ request, response })) {
       return
     }
 
-    logger.info('Received message', body)
+    switch (body.type) {
+      case 'Create':
+        handleCreate({ request, response })
+        return
+      default:
+        handleGeneric({ request, response })
+        return
+    }
   }
 }

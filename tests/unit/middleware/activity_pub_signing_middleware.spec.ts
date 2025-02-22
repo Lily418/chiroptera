@@ -14,9 +14,11 @@ test.group('validateDate', () => {
     })
 
     // THEN
-    assert.equal(result, {
+    assert.deepEqual(result, {
       ok: false,
       message: `Date Header Could Not Be Parsed`,
     })
   })
+
+  // TODO we should have more unit tests here
 })

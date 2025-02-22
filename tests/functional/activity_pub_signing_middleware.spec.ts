@@ -11,7 +11,8 @@ test.group('Activity Pub Signing Middleware', () => {
       path: '/inbox',
       method: 'POST',
       document: {
-        actor: 'http://localhost:3333',
+        '@context': ['https://www.w3.org/ns/activitystreams'],
+        'actor': 'http://localhost:3333',
       },
     })
     const response = await client.post('/inbox').json(documentAsString).headers(headers)
