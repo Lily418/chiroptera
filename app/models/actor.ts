@@ -13,6 +13,8 @@ export default class Actor extends BaseModel {
   @column.dateTime({ autoCreate: true, autoUpdate: true })
   declare updatedAt: DateTime
 
-  @hasMany(() => Note)
+  @hasMany(() => Note, {
+    foreignKey: 'attributedTo',
+  })
   declare notes: relations.HasMany<typeof Note>
 }
