@@ -11,6 +11,7 @@ import logger from '@adonisjs/core/services/logger'
 import router from '@adonisjs/core/services/router'
 import fs from 'node:fs'
 import { middleware } from './kernel.js'
+const InboxController = () => import('#controllers/inbox_controller')
 
 router.get('/.well-known/webfinger', async () => {
   return {
@@ -28,12 +29,7 @@ router.get('/.well-known/webfinger', async () => {
 
 router
   .group(() => {
-    router.post('/inbox', async ({}) => {
-      logger.info(`This message reached the inbox`)
-      // TODO: We have ensured that the actor is genuine but this doesn't not mean the actor has the permission to perform the action they are requesting, we must check this now
-      // This is also a good time to start using controllers here.
-      return {}
-    })
+    router.post('/inbox', [InboxController, 'post'])
   })
   .use(middleware.activtyPubSigning())
 

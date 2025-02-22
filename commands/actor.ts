@@ -1,4 +1,3 @@
-import fs from 'node:fs'
 import { BaseCommand } from '@adonisjs/core/ace'
 import type { CommandOptions } from '@adonisjs/core/types/ace'
 import { sendSignedRequest } from '../signing/sign_request.js'
