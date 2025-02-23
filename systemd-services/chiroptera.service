@@ -4,12 +4,12 @@ After=postgresql@16-main.service
 StartLimitIntervalSec=0
 
 [Service]
-Type=simple
-Restart=always
-RestartSec=1
-User=root
 ExecStart=/root/.nvm/versions/node/v22.14.0/bin/node /root/chiroptera/build/bin/server.js
-StandardOutput=journal+console
+Restart=always
+StandardOutput=syslog
+StandardError=syslog
+User=root
+SyslogIdentifier=chiroptera
 
 [Install]
 WantedBy=multi-user.target
