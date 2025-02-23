@@ -1,7 +1,7 @@
 import Actor from '#models/actor'
 import Generic from '#models/generic'
 import Note from '#models/note'
-import { inboxActivityStreamValidator } from '#validators/inbox'
+import { activityStreamValidator } from '#validators/activity_pub_signing_middleware'
 import type { HttpContext } from '@adonisjs/core/http'
 import logger from '@adonisjs/core/services/logger'
 
@@ -45,6 +45,7 @@ const handleCreateNote = async ({
   await actor.related('notes').create({
     id: body.object.id,
     content: body.object.content,
+    object: body.object,
   })
 
   return response.status(200).send({})
@@ -116,7 +117,7 @@ const handleGeneric = async ({ request, response }: Pick<HttpContext, 'request' 
 export default class InboxController {
   async post({ request, response }: HttpContext) {
     const body = request.body()
-    await inboxActivityStreamValidator.validate(body)
+    await activityStreamValidator.validate(body)
     if (!additionalContextValidation({ request, response })) {
       return
     }

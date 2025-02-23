@@ -3,7 +3,11 @@ import logger from '@adonisjs/core/services/logger'
 import type { NextFn } from '@adonisjs/core/types/http'
 import { createHash, verify } from 'node:crypto'
 import { sendSignedRequest } from '../../signing/sign_request.js'
-import { inboxBodyValidator, inboxHeadersValidator } from '#validators/inbox'
+import {
+  bodyValidator,
+  getHeadersValidator,
+  requestWithBodyHeadersValidator,
+} from '#validators/activity_pub_signing_middleware'
 
 const inboxLogger = logger.use('activity_pub_signing')
 
@@ -17,12 +21,20 @@ const validateHeaders = async ({
   request,
 }: {
   request: Request
-}): Promise<{ signature: string; date: string; digest: string }> => {
-  return await inboxHeadersValidator.validate(request.headers())
+}): Promise<{ signature: string; date: string; digest?: string }> => {
+  if (request.method() === 'GET') {
+    return await getHeadersValidator.validate(request.headers())
+  } else {
+    return await requestWithBodyHeadersValidator.validate(request.headers())
+  }
 }
 
 const validateBody = async ({ request }: { request: Request }) => {
-  return await inboxBodyValidator.validate(request.body())
+  if (request.method() === 'GET') {
+    return
+  }
+
+  return await bodyValidator.validate(request.body())
 }
 
 export const validateDate = ({
@@ -120,14 +132,14 @@ const validateSignatureParts = ({
   return { ok: true }
 }
 
-export default class ActivtyPubSigningMiddleware {
+export default class ActivityPubSigningMiddleware {
   async handle({ request, response }: HttpContext, next: NextFn) {
     logRequest({ request })
 
     let knownHeaders: {
       signature: string
       date: string
-      digest: string
+      digest?: string
     }
 
     try {
@@ -195,24 +207,26 @@ export default class ActivtyPubSigningMiddleware {
     const path = keyUrl.pathname
     const hash = keyUrl.hash
 
-    // Let's check if the KeyID matches the asserted actor
-    let actorURL: URL
-    try {
-      actorURL = new URL(assertedActor)
-    } catch {
-      inboxLogger.info({ assertedActor }, 'actor could not be parsed as a URL')
-      return response.abort({ error: `Expected actor property to be a valid URL` }, 401)
-    }
+    if (request.method() !== 'GET') {
+      // Let's check if the KeyID matches the asserted actor
+      let actorURL: URL
+      try {
+        actorURL = new URL(assertedActor)
+      } catch {
+        inboxLogger.info({ assertedActor }, 'actor could not be parsed as a URL')
+        return response.abort({ error: `Expected actor property to be a valid URL` }, 401)
+      }
 
-    if (actorURL.origin !== keyUrl.origin) {
-      inboxLogger.info({ actorURL, keyUrl }, 'actor origin does not match key url origin')
-      return response.abort({ error: `Expected actor property to match key url` }, 401)
+      if (actorURL.origin !== keyUrl.origin) {
+        inboxLogger.info({ actorURL, keyUrl }, 'actor origin does not match key url origin')
+        return response.abort({ error: `Expected actor property to match key url` }, 401)
+      }
     }
 
     const seenHeadersInSignature = {
       date: false,
       host: false,
-      digest: false,
+      digest: request.method() === 'GET' ? true : false,
       requestTarget: false,
     }
 

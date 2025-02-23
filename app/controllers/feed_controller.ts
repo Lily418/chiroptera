@@ -7,8 +7,8 @@ export default class FeedController {
     return inertia.render('home', { notes })
   }
 
-  async getAuthenticated({ inertia }: HttpContext) {
-    const notes = await Note.all()
+  async getAuthenticated({ inertia, auth }: HttpContext) {
+    const user = auth.user
     return inertia.render('feed/index', { notes })
   }
 }

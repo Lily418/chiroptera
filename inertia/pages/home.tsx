@@ -15,9 +15,9 @@ export default function Home() {
             GitHub
           </a>
         </p>
-        {/* <p className="font-mono">
-        You can contact the administrator at <a className="text-blue-500 underline" href='mailto:chirp@chiroptera.space'>chirp@chiroptera.space</a>
-        </p> */}
+        <p className="font-mono">
+        You can contact the administrator at <a className="text-blue-500 underline" href='mailto:hello@chiroptera.space'>hello@chiroptera.space</a>
+        </p>
         </div>
 
         <div className='flex flex-col gap-1'>

@@ -1,4 +1,4 @@
-import { validateDate } from '#middleware/activty_pub_signing_middleware'
+import { validateDate } from '#middleware/activity_pub_signing_middleware'
 import { test } from '@japa/runner'
 
 test.group('validateDate', () => {

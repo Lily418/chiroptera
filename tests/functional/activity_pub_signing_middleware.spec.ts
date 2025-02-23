@@ -1,10 +1,12 @@
 import { test } from '@japa/runner'
 import { createSignedMessage } from '../../signing/sign_request.js'
 import env from '#start/env'
+import Actor from '#models/actor'
+import User from '#models/user'
 
 // we test with the inbox endpoint but in these tests we are interested in correctly signed requests
 test.group('Activity Pub Signing Middleware', () => {
-  test('should 200 if valid message ', async ({ client }) => {
+  test('should 200 if valid POST message ', async ({ client }) => {
     const { documentAsString, headers } = createSignedMessage({
       keyId: 'http://localhost:3333/actor',
       host: process.env.HOST as string,
@@ -19,6 +21,30 @@ test.group('Activity Pub Signing Middleware', () => {
 
     response.assertStatus(200)
   })
+
+  test('should 200 if valid GET message', async ({ client }) => {
+    const { headers } = createSignedMessage({
+      keyId: 'http://localhost:3333/actor/',
+      host: process.env.HOST as string,
+      path: '/actor/pipistrelle',
+      method: 'GET',
+    })
+    const response = await client.get('/actor/pipistrelle').headers(headers)
+
+    response.assertStatus(200)
+  })
+    .setup(async () => {
+      await User.create({
+        email: 'hello@chiroptera.space',
+        password: 'testpassword',
+        externalActorId: 'https://www.chiroptera.space/actor/pipistrelle',
+      })
+    })
+    .teardown(async () => {
+      const user = await User.findBy({ email: 'hello@chiroptera.space' })
+      await user?.delete()
+    })
+
   test('it should 401 for post without a body', async ({ client }) => {
     const response = await client.post('/inbox')
 

@@ -24,4 +24,10 @@ export default class Note extends BaseModel {
 
   @column()
   declare content: string
+
+  @column()
+  declare isPublic: boolean
+
+  @column()
+  declare object: Record<string, any>
 }

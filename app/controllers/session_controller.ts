@@ -1,17 +1,19 @@
+import logger from '@adonisjs/core/services/logger'
 import User from '#models/user'
 import type { HttpContext } from '@adonisjs/core/http'
 
 export default class SessionController {
   async store({ request, response, auth }: HttpContext) {
-    const { email, password } = request.only(['email', 'password'])
-    const user = await User.verifyCredentials(email, password)
-
+    const body = request.body()
+    logger.info({ body: body }, 'Store request')
+    const user = await User.verifyCredentials(body.email, body.password)
     await auth.use('web').login(user)
-
-    response.redirect('/feed')
+    response.status(200).send({})
   }
 
-  async get({ inertia }: HttpContext) {
+  async get({ inertia, session }: HttpContext) {
+    console.log(session.flashMessages.all())
+
     return inertia.render('login/index')
   }
 }
