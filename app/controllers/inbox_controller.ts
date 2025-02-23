@@ -50,6 +50,13 @@ const handleCreateNote = async ({
   return response.status(200).send({})
 }
 
+const handleDeleteNote = async ({
+  request,
+  response,
+}: Pick<HttpContext, 'request' | 'response'>) => {
+  const body = request.body()
+}
+
 const handleCreate = async ({ request, response }: Pick<HttpContext, 'request' | 'response'>) => {
   const body = request.body()
   const createType = body.object.type
@@ -66,6 +73,16 @@ const handleCreate = async ({ request, response }: Pick<HttpContext, 'request' |
     message: body,
   })
   return response.status(200).send({})
+}
+
+const handleDelete = async ({ request, response }: Pick<HttpContext, 'request' | 'response'>) => {
+  const body = request.body()
+  const idToDelete = body.object.id
+
+  let note = await Note.find(idToDelete)
+  if (note) {
+    await note.delete()
+  }
 }
 
 const handleGeneric = async ({ request, response }: Pick<HttpContext, 'request' | 'response'>) => {
@@ -89,6 +106,9 @@ export default class InboxController {
     switch (body.type) {
       case 'Create':
         handleCreate({ request, response })
+        return
+      case 'Delete':
+        handleDelete({ request, response })
         return
       default:
         handleGeneric({ request, response })
