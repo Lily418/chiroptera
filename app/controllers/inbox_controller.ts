@@ -43,6 +43,7 @@ const handleCreateNote = async ({
   }
 
   await actor.related('notes').create({
+    id: body.object.id,
     content: body.object.content,
   })
 
