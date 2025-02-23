@@ -1,6 +1,6 @@
 import { PageLayout } from '~/components/PageLayout'
 import { PageTitle } from '~/components/Typography/PageTitle'
-import { Subtitle } from '~/components/Typography/SubTitle'
+import { Subtitle } from '~/components/Typography/Subtitle'
 
 export default function Home({ notes }: { notes: { content: string }[] }) {
   return (
