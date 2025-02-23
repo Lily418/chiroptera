@@ -83,6 +83,7 @@ const handleDelete = async ({ request, response }: Pick<HttpContext, 'request' |
   if (note) {
     await note.delete()
   }
+  return response.status(200).send({})
 }
 
 const handleGeneric = async ({ request, response }: Pick<HttpContext, 'request' | 'response'>) => {
