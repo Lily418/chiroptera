@@ -1,22 +1,54 @@
+import vine from '@vinejs/vine'
+import { Formik, FormikHelpers, FormikValues } from 'formik'
+import { useState } from 'react'
 import { PageLayout } from '~/components/PageLayout'
 import { PageTitle } from '~/components/Typography/PageTitle'
 import { Subtitle } from '~/components/Typography/Subtitle'
+import { validateWithVine } from '~/util/formik_validate_with_vine'
 
 export default function Home({ notes }: { notes: { content: string }[] }) {
   return (
     <PageLayout>
-      <div className="max-w-prose flex flex-col gap-2 ">
+      <div className="w-full flex flex-col gap-2 ">
         <PageTitle>Chiroptera</PageTitle>
-        <p className="font-mono">
-          Hello! I'm a little hobby project instance.
-          <br />
-          You can find my code on{' '}
-          <a className="text-blue-500 underline" href=" https://github.com/Lily418/chiroptera">
-            GitHub
-          </a>
-        </p>
 
-        <Subtitle>Here are all the messages I've been sent:</Subtitle>
+        <div className="w-full">
+          <div className="bg-slate-100 p-2 w-full">
+            <Formik
+              initialValues={{ query: '' }}
+              onSubmit={(values) => {
+                document.location.href = `/searchResults?q=${values.query}`
+              }}
+              validate={async (values) => {
+                return await validateWithVine(
+                  values,
+                  vine.compile(
+                    vine.object({
+                      query: vine.string().minLength(1).bail(false),
+                    })
+                  )
+                )
+              }}
+            >
+              {({ handleChange, handleSubmit, values }) => (
+                <form onSubmit={handleSubmit} className="flex flex-row gap-2 items-center">
+                  <input
+                    name="query"
+                    type="text"
+                    className="bg-white w-full h-[2rem]"
+                    value={values.query}
+                    onChange={handleChange}
+                  ></input>
+                  <button type="submit" className="text-white bg-cyan-800 rounded p-1 text-center">
+                    Search
+                  </button>
+                </form>
+              )}
+            </Formik>
+          </div>
+        </div>
+
+        <Subtitle>Here are all my messages</Subtitle>
         <ul>
           {notes.map((note) => {
             return (

@@ -42,9 +42,14 @@ const handleCreateNote = async ({
     })
   }
 
+  const publicStream = 'https://www.w3.org/ns/activitystreams#Public'
+  const isPublic =
+    body.object.to === publicStream || (body.object.cc as string[]).includes(publicStream)
+
   await actor.related('notes').create({
     id: body.object.id,
     content: body.object.content,
+    isPublic: isPublic,
     object: body.object,
   })
 

@@ -3,6 +3,7 @@ import vine from '@vinejs/vine'
 import { PageLayout } from '~/components/PageLayout'
 import { PageTitle } from '~/components/Typography/PageTitle'
 import { useEffect, useState } from 'react'
+import { validateWithVine } from '~/util/formik_validate_with_vine'
 
 export default function Login(props: any) {
   const [serverError, setServerError] = useState(null as null | string)
@@ -18,23 +19,12 @@ export default function Login(props: any) {
             password: '',
           }}
           validate={async (values) => {
-            const formSchema = vine.compile(
+            return await validateWithVine(values, vine.compile(
               vine.object({
                 email: vine.string().email().bail(false),
                 password: vine.string().minLength(1).bail(false),
               })
-            )
-            const [errors] = await formSchema.tryValidate(values)
-
-            if (!errors) {
-              return {}
-            } else {
-              return (errors.messages as { field: string; message: string }[]).reduce((acc, v) => {
-                return Object.assign(acc, {
-                  [v.field]: v.message,
-                })
-              }, {})
-            }
+            ))
           }}
           onSubmit={async (values) => {
             setServerError(null)
@@ -51,7 +41,7 @@ export default function Login(props: any) {
             })
 
             if (response.ok) {
-              location.href = '/feed'
+              document.location.href = '/feed'
             } else {
               const json = await response.json()
               console.error(json)

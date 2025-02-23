@@ -76,7 +76,8 @@
     "react-dom": "^19.0.0",
     "reflect-metadata": "^0.2.2",
     "sinon": "^19.0.2",
-    "tailwindcss": "^4.0.8"
+    "tailwindcss": "^4.0.8",
+    "uuid": "^11.1.0"
   },
   "hotHook": {
     "boundaries": [

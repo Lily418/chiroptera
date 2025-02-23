@@ -29,5 +29,5 @@ export default class User extends compose(BaseModel, AuthFinder) {
   declare externalActorId: string
 
   @column()
-  declare username: string
+  declare displayName: string
 }

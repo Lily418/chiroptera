@@ -1,7 +1,9 @@
 import fs from 'node:fs'
+import { v4 as uuidv4 } from 'uuid'
 import type { HttpContext } from '@adonisjs/core/http'
 import logger from '@adonisjs/core/services/logger'
 import User from '#models/user'
+import { sendSignedRequest } from '../../signing/sign_request.js'
 
 export default class ActorsController {
   async get({ request, response }: HttpContext) {
@@ -48,5 +50,28 @@ export default class ActorsController {
         },
       }
     }
+  }
+
+  async follow({ request, response, auth }: HttpContext) {
+    const usersExternalId = auth.user!.externalActorId
+    const uriAsUrl = new URL(request.param('actorId'))
+    const document = {
+      '@context': 'https://www.w3.org/ns/activitystreams',
+      'id': `${process.env.BASE_INSTANCE_ID}/${uuidv4()}`,
+      'type': 'Follow',
+      'actor': usersExternalId,
+      'object': request.param('actorId'),
+    }
+
+    await sendSignedRequest({
+      keyId: `${process.env.BASE_INSTANCE_ID}/actor`,
+      host: uriAsUrl.host,
+      path: '/inbox',
+      protocol: 'http',
+      method: 'POST',
+      document: document,
+    })
+
+    return response.status(200).send({})
   }
 }
