@@ -1,11 +1,11 @@
-import { Formik, FormikHelpers, FormikValues } from 'formik';
+import { Formik } from 'formik';
 import vine from '@vinejs/vine'
 import { PageLayout } from "~/components/PageLayout";
-import { H1 } from "~/components/Typography/h1";
+import { PageTitle } from '~/components/Typography/PageTitle';
 
 export default function Login() {
     return <PageLayout>
-        <H1>Login</H1>
+        <PageTitle>Login</PageTitle>
         <Formik initialValues={{
             email: '',
             password: ''

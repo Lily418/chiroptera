@@ -1,12 +1,12 @@
 import { PageLayout } from '~/components/PageLayout'
-import { H1 } from '~/components/Typography/h1'
-import { H2 } from '~/components/Typography/H2'
+import { PageTitle } from '~/components/Typography/PageTitle'
+import { Subtitle } from '~/components/Typography/SubTitle'
 
 export default function Home({ notes }: { notes: { content: string }[] }) {
   return (
     <PageLayout>
       <div className="max-w-prose flex flex-col gap-2 ">
-        <H1>Chiroptera</H1>
+        <PageTitle>Chiroptera</PageTitle>
         <p className="font-mono">
           Hello! I'm a little hobby project instance.
           <br />
@@ -16,7 +16,7 @@ export default function Home({ notes }: { notes: { content: string }[] }) {
           </a>
         </p>
 
-        <H2>Here are all the messages I've been sent:</H2>
+        <Subtitle>Here are all the messages I've been sent:</Subtitle>
         <ul>
           {notes.map((note) => {
             return (

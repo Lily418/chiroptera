@@ -1,12 +1,11 @@
 import { PageLayout } from '~/components/PageLayout'
-import { H1 } from '~/components/Typography/h1'
-import { H2 } from '~/components/Typography/H2'
+import { PageTitle } from '~/components/Typography/PageTitle'
 
-export default function Home({ notes }: { notes: { content: string }[] }) {
+export default function Home() {
   return (
     <PageLayout>
       <div className="max-w-prose flex flex-col gap-4">
-        <H1>Chiroptera</H1>
+        <PageTitle>Chiroptera</PageTitle>
         <div className='flex flex-col gap-2 bg-slate-100 p-2'>
         <p className="font-mono">
           Hello! I'm a tiny hobby project instance.

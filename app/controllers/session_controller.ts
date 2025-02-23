@@ -1,5 +1,4 @@
 import User from '#models/user'
-import hash from '@adonisjs/core/services/hash'
 import type { HttpContext } from '@adonisjs/core/http'
 
 export default class SessionController {
