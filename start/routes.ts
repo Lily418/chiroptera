@@ -11,6 +11,7 @@ import logger from '@adonisjs/core/services/logger'
 import router from '@adonisjs/core/services/router'
 import fs from 'node:fs'
 import { middleware } from './kernel.js'
+const FeedsController = () => import('#controllers/feed_controller')
 const InboxController = () => import('#controllers/inbox_controller')
 
 router.get('/.well-known/webfinger', async () => {
@@ -55,4 +56,4 @@ router.get('/actor', async ({ response, request }) => {
   }
 })
 
-// router.on('/').renderInertia('home')
+router.get('/', [FeedsController, 'get'])

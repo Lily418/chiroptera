@@ -1,4 +1,5 @@
 import { defineConfig } from '@adonisjs/vite'
+import tailwindcss from '@tailwindcss/vite'
 
 const viteBackendConfig = defineConfig({
   /**
@@ -23,6 +24,7 @@ const viteBackendConfig = defineConfig({
   scriptAttributes: {
     defer: true,
   },
+  plugins: [tailwindcss()],
 })
 
 export default viteBackendConfig
