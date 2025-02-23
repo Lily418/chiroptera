@@ -13,11 +13,14 @@ export default class Note extends BaseModel {
   @column.dateTime({ autoCreate: true, autoUpdate: true })
   declare updatedAt: DateTime
 
-  @belongsTo(() => Actor)
-  declare attributedTo: BelongsTo<typeof Actor>
+  @belongsTo(() => Actor, {
+    localKey: 'attributedTo',
+    foreignKey: 'id',
+  })
+  declare attributedActor: BelongsTo<typeof Actor>
 
   @column()
-  declare attributedToId: string
+  declare attributedTo: string
 
   @column()
   declare content: string
