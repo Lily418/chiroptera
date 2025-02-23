@@ -11,6 +11,7 @@ import logger from '@adonisjs/core/services/logger'
 import router from '@adonisjs/core/services/router'
 import fs from 'node:fs'
 import { middleware } from './kernel.js'
+const SessionController = () => import('#controllers/session_controller')
 const FeedsController = () => import('#controllers/feed_controller')
 const InboxController = () => import('#controllers/inbox_controller')
 
@@ -56,4 +57,6 @@ router.get('/actor', async ({ response, request }) => {
   }
 })
 
-router.get('/', [FeedsController, 'get'])
+router.get('/', [FeedsController, 'getPublic'])
+router.get('/login', [SessionController, 'get'])
+router.get('/feed', [FeedsController, 'getAuthenticated'])
