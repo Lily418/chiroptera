@@ -14,12 +14,12 @@ export default class CreateUser extends BaseCommand {
   async run() {
     const email = await this.prompt.ask('Enter the email')
     const password = await this.prompt.ask('Enter the password')
-    const username = await this.prompt.ask('Enter the username')
+    const displayName = await this.prompt.ask('Enter the display name')
 
     await User.create({
       email,
       password,
-      username,
+      displayName,
     })
   }
 }

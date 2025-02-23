@@ -44,7 +44,7 @@ test.group('Actor', () => {
       await user?.delete()
     })
 
-  test('should 404 for an non existing actor', async ({ client, assert }) => {
+  test('should 404 for an non existing actor', async ({ client }) => {
     const { headers } = createSignedMessage({
       keyId: 'http://localhost:3333/actor/',
       host: process.env.HOST as string,

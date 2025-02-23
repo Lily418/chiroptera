@@ -1,7 +1,5 @@
 import Note from '#models/note'
-import User from '#models/user'
 import type { HttpContext } from '@adonisjs/core/http'
-import logger from '@adonisjs/core/services/logger'
 
 export default class FeedController {
   async getPublic({ inertia }: HttpContext) {

@@ -41,7 +41,7 @@ export default class ActorsController {
         '@context': ['https://www.w3.org/ns/activitystreams', 'https://w3id.org/security/v1'],
         'id': `${process.env.BASE_INSTANCE_ID}/actor/${id}`,
         'type': 'Person',
-        'preferredUsername': user.username,
+        'preferredUsername': user.displayName,
         'inbox': `${process.env.BASE_INSTANCE_ID}/inbox`,
         'publicKey': {
           id: `${process.env.BASE_INSTANCE_ID}/actor/${id}#main-key`,

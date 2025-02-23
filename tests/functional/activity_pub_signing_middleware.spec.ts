@@ -1,7 +1,6 @@
 import { test } from '@japa/runner'
 import { createSignedMessage } from '../../signing/sign_request.js'
 import env from '#start/env'
-import Actor from '#models/actor'
 import User from '#models/user'
 
 // we test with the inbox endpoint but in these tests we are interested in correctly signed requests
