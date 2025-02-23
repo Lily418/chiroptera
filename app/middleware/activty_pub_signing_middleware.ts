@@ -134,18 +134,17 @@ export default class ActivtyPubSigningMiddleware {
       knownHeaders = await validateHeaders({ request })
     } catch (e) {
       logger.info(e, 'Vine header validation error')
-      return response
-        .status(400)
-        .send({ error: 'Request headers failed to validate', messages: e.messages })
+      return response.abort(
+        { error: 'Request headers failed to validate', messages: e.messages },
+        400
+      )
     }
 
     try {
       await validateBody({ request })
     } catch (e) {
       logger.info(e, 'Vine header validation error')
-      return response
-        .status(400)
-        .send({ error: 'Request body failed to validate', messages: e.messages })
+      return response.abort({ error: 'Request body failed to validate', messages: e.messages })
     }
 
     const dateValidation = validateDate({
@@ -154,7 +153,7 @@ export default class ActivtyPubSigningMiddleware {
     })
 
     if (!dateValidation.ok) {
-      return response.status(401).send({ error: dateValidation.message })
+      return response.abort({ error: dateValidation.message }, 401)
     }
 
     const requestBody = request.body()
@@ -188,7 +187,7 @@ export default class ActivtyPubSigningMiddleware {
     })
 
     if (!signatureValidation.ok) {
-      return response.status(401).send({ error: signatureValidation.message })
+      return response.abort({ error: signatureValidation.message }, 401)
     }
 
     const keyUrl = new URL(keyId)
@@ -197,15 +196,17 @@ export default class ActivtyPubSigningMiddleware {
     const hash = keyUrl.hash
 
     // Let's check if the KeyID matches the asserted actor
+    let actorURL: URL
     try {
-      const actorURL = new URL(assertedActor)
-      if (actorURL.origin !== keyUrl.origin) {
-        inboxLogger.info({ actorURL, keyUrl }, 'actor origin does not match key url origin')
-        return response.status(401).send({ error: `Expected actor property to match key url` })
-      }
+      actorURL = new URL(assertedActor)
     } catch {
       inboxLogger.info({ assertedActor }, 'actor could not be parsed as a URL')
-      return response.status(401).send({ error: `Expected actor property to be a valid URL` })
+      return response.abort({ error: `Expected actor property to be a valid URL` }, 401)
+    }
+
+    if (actorURL.origin !== keyUrl.origin) {
+      inboxLogger.info({ actorURL, keyUrl }, 'actor origin does not match key url origin')
+      return response.abort({ error: `Expected actor property to match key url` }, 401)
     }
 
     const seenHeadersInSignature = {
@@ -250,7 +251,7 @@ export default class ActivtyPubSigningMiddleware {
         })
         .join('\n')
     } catch {
-      return response.status(401).send({ error: `Signature includes missing header` })
+      return response.abort({ error: `Signature includes missing header` }, 401)
     }
 
     const anyRequiredHeadersMissingInSignature = Object.values(seenHeadersInSignature).some(
@@ -259,9 +260,12 @@ export default class ActivtyPubSigningMiddleware {
 
     if (anyRequiredHeadersMissingInSignature) {
       inboxLogger.info(seenHeadersInSignature, 'Missing Headers In Signature')
-      return response.status(401).send({
-        error: `Signature is missing one or more required headers`,
-      })
+      return response.abort(
+        {
+          error: `Signature is missing one or more required headers`,
+        },
+        401
+      )
     }
 
     logger.info('About to send signed request')
@@ -280,7 +284,7 @@ export default class ActivtyPubSigningMiddleware {
     })
 
     if (!keyResponse.ok) {
-      return response.status(401).send({ error: `Failed to fetch fetch ${keyId}` })
+      return response.abort({ error: `Failed to fetch fetch ${keyId}` }, 401)
     }
 
     inboxLogger.info({ keyId }, 'Signature header contained the key id')
@@ -290,7 +294,7 @@ export default class ActivtyPubSigningMiddleware {
     const key = keyResponseJson.publicKey.publicKeyPem
     if (!key) {
       inboxLogger.info('Key id response did not contain public key')
-      return response.status(401).send({ error: `Failed to fetch fetch ${keyId}` })
+      return response.abort({ error: `Failed to fetch fetch ${keyId}` }, 401)
     }
 
     inboxLogger.info({ comparisonString }, 'We are using the comparison string:')
@@ -300,11 +304,14 @@ export default class ActivtyPubSigningMiddleware {
 
     if (!valid) {
       inboxLogger.info('Failed to validate signature')
-      return response.status(401).send({
-        error: `Verification failed`,
-        comparisonString,
-        signature: signatureParts.signature,
-      })
+      return response.abort(
+        {
+          error: `Verification failed`,
+          comparisonString,
+          signature: signatureParts.signature,
+        },
+        401
+      )
     }
 
     inboxLogger.info(requestBody, 'We have validated the message comes from claimed actor')

@@ -232,12 +232,12 @@ test.group('Activity Pub Signing Middleware', () => {
 
   test('401 if actor origin does not match keyId', async ({ client, assert }) => {
     const { documentAsString, headers } = createSignedMessage({
-      keyId: 'http://localhost:3333/actor',
+      keyId: 'https://localhost:3333/actor',
       host: process.env.HOST as string,
       path: '/inbox',
       method: 'POST',
       document: {
-        actor: 'http://chiroptera.space',
+        actor: 'https://chiroptera.space',
       },
     })
 
