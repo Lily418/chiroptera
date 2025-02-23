@@ -4,6 +4,7 @@ After=postgresql@16-main.service
 StartLimitIntervalSec=0
 
 [Service]
+WorkingDirectory=/root/chiroptera/build
 ExecStart=/root/.nvm/versions/node/v22.14.0/bin/node /root/chiroptera/build/bin/server.js
 Restart=always
 StandardOutput=journal
