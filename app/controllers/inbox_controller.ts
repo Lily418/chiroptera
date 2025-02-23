@@ -77,15 +77,35 @@ const handleCreate = async ({ request, response }: Pick<HttpContext, 'request' |
 
 const handleDelete = async ({ request, response }: Pick<HttpContext, 'request' | 'response'>) => {
   const body = request.body()
-  const idToDelete = body.object.id
+  const actorUrl = new URL(body.actor)
+  const idToDelete = body.object.id ?? body.object
 
-  if (!idToDelete) {
+  if (!idToDelete || typeof idToDelete !== 'string') {
+    logger.info(idToDelete, 'ID To Delete is not a String')
     return handleGeneric({ request, response })
+  }
+
+  let idToDeleteUrl
+  try {
+    idToDeleteUrl = new URL(idToDelete)
+  } catch {
+    logger.info(idToDelete, 'ID To Delete is not a URL')
+    return handleGeneric({ request, response })
+  }
+
+  if (idToDeleteUrl.origin !== actorUrl.origin) {
+    logger.info({ actorUrl, idToDelete }, 'Actor does not match object to delete')
+    return response.status(401).send({ error: 'Actor does not match object to delete' })
   }
 
   let note = await Note.find(idToDelete)
   if (note) {
     await note.delete()
+  }
+
+  let actor = await Actor.find(idToDelete)
+  if (actor) {
+    await actor.delete()
   }
   return response.status(200).send({})
 }
