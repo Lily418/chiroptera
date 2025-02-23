@@ -6,8 +6,8 @@ StartLimitIntervalSec=0
 [Service]
 ExecStart=/root/.nvm/versions/node/v22.14.0/bin/node /root/chiroptera/build/bin/server.js
 Restart=always
-StandardOutput=syslog
-StandardError=syslog
+StandardOutput=journal
+StandardError=journal
 User=root
 SyslogIdentifier=chiroptera
 
