@@ -12,7 +12,7 @@ export default class Echo extends BaseCommand {
   async run() {
     const document = JSON.parse(fs.readFileSync('create-hello-world.json', 'utf-8'))
     const response = await sendSignedRequest({
-      keyId: 'https://www.noticeboard.events/actor',
+      keyId: 'https://www.chiroptera.space/actor',
       host: 'localhost:3333',
       path: '/inbox',
       protocol: 'http',

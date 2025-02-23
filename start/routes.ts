@@ -16,13 +16,13 @@ const InboxController = () => import('#controllers/inbox_controller')
 
 router.get('/.well-known/webfinger', async () => {
   return {
-    subject: 'acct:lily418@noticeboard.events',
+    subject: 'acct:lily418@chiroptera.space',
 
     links: [
       {
         rel: 'self',
         type: 'application/activity+json',
-        href: 'https://www.noticeboard.events/actor',
+        href: 'https://www.chiroptera.space/actor',
       },
     ],
   }
@@ -43,14 +43,14 @@ router.get('/actor', async ({ response, request }) => {
   return {
     '@context': ['https://www.w3.org/ns/activitystreams', 'https://w3id.org/security/v1'],
 
-    'id': 'https://www.noticeboard.events/actor',
+    'id': 'https://www.chiroptera.space/actor',
     'type': 'Person',
     'preferredUsername': 'lily418',
-    'inbox': 'https://www.noticeboard.events/inbox',
+    'inbox': 'https://www.chiroptera.space/inbox',
 
     'publicKey': {
-      id: 'https://www.noticeboard.events/actor#main-key',
-      owner: 'https://www.noticeboard.events/actor',
+      id: 'https://www.chiroptera.space/actor#main-key',
+      owner: 'https://www.chiroptera.space/actor',
       publicKeyPem: publicKey,
     },
   }

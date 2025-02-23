@@ -163,19 +163,19 @@ test.group('Activity Pub Signing Middleware', () => {
     },
     {
       expectedError: `Missing Headers in Signature`,
-      signature: `keyId="https://noticeboard.events",signature="ABC"`,
+      signature: `keyId="https://chiroptera.space",signature="ABC"`,
     },
     {
       expectedError: `Missing Signature in Signature`,
-      signature: `keyId="https://noticeboard.events",headers="host"`,
+      signature: `keyId="https://chiroptera.space",headers="host"`,
     },
     {
       expectedError: `Unsupported signing algorithm. I only know rsa-sha256`,
-      signature: `keyId="https://noticeboard.events",headers="host",signature="ABC",algorithm="unknown"`,
+      signature: `keyId="https://chiroptera.space",headers="host",signature="ABC",algorithm="unknown"`,
     },
     {
       expectedError: `Expected Signature to be a Base64 Encoded string`,
-      signature: `keyId="https://noticeboard.events",headers="host",signature="&"`,
+      signature: `keyId="https://chiroptera.space",headers="host",signature="&"`,
     },
   ])
 
@@ -240,7 +240,7 @@ test.group('Activity Pub Signing Middleware', () => {
       path: '/inbox',
       method: 'POST',
       document: {
-        actor: 'http://noticeboard.events',
+        actor: 'http://chiroptera.space',
       },
     })
 
@@ -404,7 +404,7 @@ test.group('test no http keys', (group) => {
       },
     })
 
-    headers['Signature'] = `keyId="http://noticeboard.events",headers="host",signature="ABC="`
+    headers['Signature'] = `keyId="http://chiroptera.space",headers="host",signature="ABC="`
 
     const response = await client.post('/inbox').json(documentAsString).headers(headers)
     response.assertStatus(401)

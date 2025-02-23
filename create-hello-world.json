@@ -1,13 +1,13 @@
 {
     "@context": "https://www.w3.org/ns/activitystreams",
-    "id": "https://www.noticeboard.events/create-hello-world-2",
+    "id": "https://www.chiroptera.space/create-hello-world-2",
     "type": "Create",
-    "actor": "https://www.noticeboard.events/actor",
+    "actor": "https://www.chiroptera.space/actor",
     "object": {
-        "id": "https://www.noticeboard.events/hello-world-2",
+        "id": "https://www.chiroptera.space/hello-world-2",
         "type": "Note",
         "published": "2025-02-16T15:59:11Z",
-        "attributedTo": "https://www.noticeboard.events/actor",
+        "attributedTo": "https://www.chiroptera.space/actor",
         "inReplyTo": "https://lgbtqia.space/@PurpleOrchid/114009921890763467",
         "content": "<p>Hello Gerbil</p>",
         "to": "https://www.w3.org/ns/activitystreams#Public"
