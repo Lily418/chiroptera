@@ -79,6 +79,10 @@ const handleDelete = async ({ request, response }: Pick<HttpContext, 'request' |
   const body = request.body()
   const idToDelete = body.object.id
 
+  if (!idToDelete) {
+    return handleGeneric({ request, response })
+  }
+
   let note = await Note.find(idToDelete)
   if (note) {
     await note.delete()
