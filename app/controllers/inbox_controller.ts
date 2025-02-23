@@ -50,13 +50,6 @@ const handleCreateNote = async ({
   return response.status(200).send({})
 }
 
-const handleDeleteNote = async ({
-  request,
-  response,
-}: Pick<HttpContext, 'request' | 'response'>) => {
-  const body = request.body()
-}
-
 const handleCreate = async ({ request, response }: Pick<HttpContext, 'request' | 'response'>) => {
   const body = request.body()
   const createType = body.object.type

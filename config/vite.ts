@@ -25,6 +25,6 @@ const viteBackendConfig = defineConfig({
     defer: true,
   },
   plugins: [tailwindcss()],
-})
+} as any)
 
 export default viteBackendConfig

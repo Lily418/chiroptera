@@ -101,10 +101,7 @@ test.group('Activity Pub Signing Middleware', () => {
     })
   })
 
-  test('should 401 if a message with a body which does not have a digest', async ({
-    client,
-    assert,
-  }) => {
+  test('should 401 if a message with a body which does not have a digest', async ({ client }) => {
     const { documentAsString, headers } = createSignedMessage({
       keyId: 'http://localhost:3333/actor',
       host: process.env.HOST as string,
