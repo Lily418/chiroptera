@@ -4,6 +4,9 @@ import type { BelongsTo } from '@adonisjs/lucid/types/relations'
 import User from './user.js'
 
 export default class Following extends BaseModel {
+  @column({ isPrimary: true })
+  declare id: number
+
   @belongsTo(() => Actor, {
     localKey: 'following',
     foreignKey: 'id',
