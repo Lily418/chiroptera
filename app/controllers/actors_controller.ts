@@ -64,7 +64,7 @@ export default class ActorsController {
 
     logger.info(document, 'Follow Document')
 
-    await sendSignedRequest({
+    const responseFromFollow = await sendSignedRequest({
       keyId: `${process.env.BASE_INSTANCE_ID}/actor`,
       host: uriAsUrl.host,
       path: '/inbox',
@@ -72,6 +72,8 @@ export default class ActorsController {
       method: 'POST',
       document: document,
     })
+
+    logger.info(responseFromFollow, 'Response from follow')
 
     return response.status(200).send({})
   }
