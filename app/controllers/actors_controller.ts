@@ -54,17 +54,18 @@ export default class ActorsController {
     const usersExternalId = auth.user!.externalActorId
     const actorId = decodeURIComponent(request.param('actorId'))
     const uriAsUrl = new URL(actorId)
+    const protocolForActor = uriAsUrl.protocol.substring(0, uriAsUrl.protocol.length - 1)
 
-    if (uriAsUrl.protocol !== 'http' && uriAsUrl.protocol !== 'https') {
+    if (protocolForActor !== 'http' && protocolForActor !== 'https') {
       return response.abort(
-        { error: 'Unsupported actor protocol', protocol: uriAsUrl.protocol },
+        { error: 'Unsupported actor protocol', protocol: protocolForActor },
         400
       )
     }
 
-    if (uriAsUrl.protocol === 'http' && process.env.ALLOW_HTTP_KEYS !== 'true') {
+    if (protocolForActor === 'http' && process.env.ALLOW_HTTP_KEYS !== 'true') {
       return response.abort(
-        { error: 'http actor protocol not allowed', protocol: uriAsUrl.protocol },
+        { error: 'http actor protocol not allowed', protocol: protocolForActor },
         400
       )
     }
@@ -84,7 +85,7 @@ export default class ActorsController {
       keyId: `${process.env.BASE_INSTANCE_ID}/actor`,
       host: uriAsUrl.host,
       path: uriAsUrl.pathname,
-      protocol: uriAsUrl.protocol,
+      protocol: protocolForActor,
       method: 'GET',
     })
 
@@ -94,7 +95,7 @@ export default class ActorsController {
       keyId: `${process.env.BASE_INSTANCE_ID}/actor`,
       host: uriAsUrl.host,
       path: '/inbox',
-      protocol: uriAsUrl.protocol,
+      protocol: protocolForActor,
       method: 'POST',
       document: document,
     })
