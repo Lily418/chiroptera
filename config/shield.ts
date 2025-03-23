@@ -21,6 +21,9 @@ const shieldConfig = defineConfig({
       if (ctx.request.url() === '/inbox') {
         return true
       }
+      if (ctx.request.url() === '/.well-known/webfinger') {
+        return true
+      }
       return ctx.request.url().includes('/api/')
     },
     enableXsrfCookie: true,

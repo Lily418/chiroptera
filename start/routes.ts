@@ -17,12 +17,11 @@ const InboxController = () => import('#controllers/inbox_controller')
 router.get('/.well-known/webfinger', async () => {
   return {
     subject: 'acct:lily418@chiroptera.space',
-
     links: [
       {
         rel: 'self',
         type: 'application/activity+json',
-        href: 'https://www.chiroptera.space/actor',
+        href: 'https://www.chiroptera.space/actor/pipistrelle',
       },
     ],
   }
