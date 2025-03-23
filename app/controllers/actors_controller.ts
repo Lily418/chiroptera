@@ -54,13 +54,14 @@ export default class ActorsController {
 
   async follow({ request, response, auth }: HttpContext) {
     const usersExternalId = auth.user!.externalActorId
-    const uriAsUrl = new URL(request.param('actorId'))
+    const actorId = decodeURI(request.param('actorId'))
+    const uriAsUrl = new URL(actorId)
     const document = {
       '@context': 'https://www.w3.org/ns/activitystreams',
       'id': `${process.env.BASE_INSTANCE_ID}/${uuidv4()}`,
       'type': 'Follow',
       'actor': usersExternalId,
-      'object': request.param('actorId'),
+      'object': actorId,
     }
 
     logger.info(document, 'Follow Document')
