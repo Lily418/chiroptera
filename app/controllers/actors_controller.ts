@@ -125,7 +125,10 @@ export default class ActorsController {
       document: document,
     })
 
+    logger.info(responseFromFollow, 'responseFromFollow')
     logger.info(responseFromFollow.status, 'Status from follow')
+
+    logger.info(await responseFromFollow.text(), 'Text from follow')
 
     if (responseFromFollow.ok) {
       await Following.create({

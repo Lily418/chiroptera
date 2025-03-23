@@ -6,13 +6,16 @@ export default class Echo extends BaseCommand {
   static commandName = 'actor'
   static description = ''
 
-  static options: CommandOptions = {}
+  static options: CommandOptions = {
+    startApp: true,
+    staysAlive: false,
+  }
 
   async run() {
     const response = await sendSignedRequest({
       keyId: 'https://chiroptera.space/actor',
       host: 'chiroptera.space',
-      path: '/actor/ghost',
+      path: '/actor/pipistrelle',
       protocol: 'https',
       method: 'GET',
     })
