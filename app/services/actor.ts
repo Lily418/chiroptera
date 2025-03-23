@@ -3,6 +3,7 @@ import User from '#models/user'
 import logger from '@adonisjs/core/services/logger'
 import { sendSignedRequest } from '../../signing/sign_request.js'
 import Note from '#models/note'
+import { upsertNote } from './note.js'
 
 export const upsertActor = async ({
   externalId,
@@ -79,26 +80,7 @@ export const fetchOutbox = async ({ actorId, userId }: { actorId: number; userId
           orderedItem.type === 'Create' &&
           orderedItem.object.attributedTo === actor!.external_id
         ) {
-          const publicStream = 'https://www.w3.org/ns/activitystreams#Public'
-          const isPublic =
-            orderedItem.object.to === publicStream ||
-            (orderedItem.object.cc as string[]).includes(publicStream)
-
-          const existingNote = await Note.findBy({
-            external_id: orderedItem.object.id,
-          })
-
-          if (!existingNote) {
-            await actor!.related('notes').create({
-              external_id: orderedItem.object.id,
-              content: orderedItem.object.content,
-              isPublic: isPublic,
-              object: orderedItem.object,
-            })
-          } else {
-            existingNote.content = orderedItem.object.content
-            existingNote.save()
-          }
+          await upsertNote(actor!, orderedItem)
         }
       })
     )

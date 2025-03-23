@@ -6,6 +6,7 @@ import type { HttpContext } from '@adonisjs/core/http'
 import logger from '@adonisjs/core/services/logger'
 import { sendSignedRequest } from '../../signing/sign_request.js'
 import { upsertActor } from '#services/actor'
+import { upsertNote } from '#services/note'
 
 const additionalContextValidation = ({
   request,
@@ -67,16 +68,7 @@ const handleCreateNote = async ({
     object: actorBody,
   })
 
-  const publicStream = 'https://www.w3.org/ns/activitystreams#Public'
-  const isPublic =
-    body.object.to === publicStream || (body.object.cc as string[]).includes(publicStream)
-
-  await actor.related('notes').create({
-    external_id: body.object.id,
-    content: body.object.content,
-    isPublic: isPublic,
-    object: body.object,
-  })
+  await upsertNote(actor, body.object)
 
   return response.status(200).send({})
 }

@@ -60,7 +60,19 @@ export default function Home({
         <div className="bg-sky-100 my-4 p-2 flex flex-col gap-2">
           <Formik
             initialValues={{ content: '' }}
-            onSubmit={(values) => {}}
+            onSubmit={async (values) => {
+              await fetch(`/api/note`, {
+                method: 'POST',
+                headers: {
+                  'Accept': 'application/json',
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                  content: values.content,
+                }),
+              })
+              location.reload()
+            }}
             validate={async (values) => {
               return await validateWithVine(
                 values,
@@ -72,10 +84,11 @@ export default function Home({
               )
             }}
           >
-            {({ handleChange, handleSubmit, values }) => (
+            {({ handleChange, handleSubmit, values, isSubmitting }) => (
               <form onSubmit={handleSubmit}>
                 <Subtitle>Posting as {user.displayName}</Subtitle>
                 <textarea
+                  name="content"
                   className="bg-white w-full h-[6rem]"
                   onChange={handleChange}
                   value={values.content}
@@ -83,6 +96,7 @@ export default function Home({
                 <button
                   type="submit"
                   className="text-white bg-cyan-800 rounded p-1 text-center lowercase"
+                  disabled={isSubmitting}
                 >
                   Chirp
                 </button>

@@ -48,6 +48,6 @@ router
     router.get('/searchResults', [FeedsController, 'searchResults'])
     router.get('/profile/:actorId', [FeedsController, 'profileFeed'])
     router.post('/api/actor/:actorId/follow', [ActorsController, 'follow'])
-    router.post('/note', [NoteController, 'create'])
+    router.post('/api/note', [NoteController, 'create'])
   })
   .use(middleware.auth())
