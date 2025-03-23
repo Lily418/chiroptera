@@ -15,12 +15,12 @@ export default class FeedController {
   async getAuthenticated({ inertia, auth }: HttpContext) {
     const authedActor = await Actor.findBy({ local_user: auth.user!.id })
 
-    logger.info(await Following.query().where('follower', '=', auth.user!.id), 'followings')
+    logger.info(await Following.query().where('follower', '=', authedActor!.id), 'followings')
 
     const notes = await Note.query()
       .whereIn(
         'attributed_to',
-        db.from('followings').select('following').where('follower', '=', auth.user!.id)
+        db.from('followings').select('following').where('follower', '=', authedActor!.id)
       )
       .orWhere('attributed_to', authedActor!.id)
 
