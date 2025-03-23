@@ -90,8 +90,9 @@ export default class ActorsController {
     })
 
     logger.info(externalActor.status, 'Status')
-    console.log(externalActor.body)
-    logger.info(externalActor.body, 'External Actor')
+    const actorBody = await externalActor.json()
+    console.log(actorBody)
+    logger.info(actorBody, 'External Actor')
 
     const responseFromFollow = await sendSignedRequest({
       keyId: `${process.env.BASE_INSTANCE_ID}/actor`,
