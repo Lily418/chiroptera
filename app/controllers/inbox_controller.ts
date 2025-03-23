@@ -72,7 +72,7 @@ const handleCreateNote = async ({
     body.object.to === publicStream || (body.object.cc as string[]).includes(publicStream)
 
   await actor.related('notes').create({
-    id: body.object.id,
+    external_id: body.object.id,
     content: body.object.content,
     isPublic: isPublic,
     object: body.object,
@@ -122,12 +122,12 @@ const handleDelete = async ({ request, response }: Pick<HttpContext, 'request' |
     return response.status(401).send({ error: 'Actor does not match object to delete' })
   }
 
-  let note = await Note.find(idToDelete)
+  let note = await Note.find({ external_id: idToDelete })
   if (note) {
     await note.delete()
   }
 
-  let actor = await Actor.find(idToDelete)
+  let actor = await Actor.find({ external_id: idToDelete })
   if (actor) {
     await actor.delete()
   }

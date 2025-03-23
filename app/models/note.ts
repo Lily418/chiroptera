@@ -29,5 +29,8 @@ export default class Note extends BaseModel {
   declare isPublic: boolean
 
   @column()
+  declare external_id: string
+
+  @column()
   declare object: Record<string, any>
 }
