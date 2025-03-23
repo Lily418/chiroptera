@@ -1,6 +1,7 @@
 import Actor from '#models/actor'
 import Note from '#models/note'
 import type { HttpContext } from '@adonisjs/core/http'
+import logger from '@adonisjs/core/services/logger'
 import db from '@adonisjs/lucid/services/db'
 
 export default class FeedController {

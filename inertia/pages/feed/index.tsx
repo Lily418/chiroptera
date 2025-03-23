@@ -50,7 +50,10 @@ export default function Home({ notes, actors }: { notes: { content: string, attr
 
         <Subtitle>Here are all my messages</Subtitle>
         <ul>
-          {notes.map((note) => {
+          {JSON.stringify(notes)}
+          {JSON.stringify(actors)}
+
+          {/* {notes.map((note) => {
             const actor = actors[note.attributed_to];
             return (
               <li>
@@ -62,7 +65,7 @@ export default function Home({ notes, actors }: { notes: { content: string, attr
               />
               </li>
             )
-          })}
+          })} */}
         </ul>
       </div>
     </PageLayout>
