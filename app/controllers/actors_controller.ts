@@ -83,7 +83,7 @@ export default class ActorsController {
     logger.info(document, 'Follow Document')
 
     const externalActor = await sendSignedRequest({
-      keyId: `${process.env.BASE_INSTANCE_ID}/actor`,
+      keyId: usersExternalId,
       host: uriAsUrl.host,
       path: uriAsUrl.pathname,
       protocol: protocolForActor,
