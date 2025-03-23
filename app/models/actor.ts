@@ -5,7 +5,7 @@ import * as relations from '@adonisjs/lucid/types/relations'
 
 export default class Actor extends BaseModel {
   @column({ isPrimary: true })
-  declare id: string
+  declare id: number
 
   @column.dateTime({ autoCreate: true })
   declare createdAt: DateTime

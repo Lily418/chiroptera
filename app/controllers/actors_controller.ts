@@ -5,6 +5,7 @@ import logger from '@adonisjs/core/services/logger'
 import User from '#models/user'
 import { sendSignedRequest } from '../../signing/sign_request.js'
 import { upsertActor } from '#services/actor'
+import Following from '#models/following'
 
 export default class ActorsController {
   async get({ request, response }: HttpContext) {
@@ -94,7 +95,7 @@ export default class ActorsController {
 
     logger.info(actorBody, 'External Actor Body')
 
-    await upsertActor({
+    const actor = await upsertActor({
       externalId: actorBody.id,
       inbox: actorBody.inbox,
       outbox: actorBody.outbox,
@@ -121,6 +122,13 @@ export default class ActorsController {
       logger.info(responseFromFollowJson, 'responseFromFollowJson')
     } catch (err) {
       //noop
+    }
+
+    if (responseFromFollow.ok) {
+      Following.create({
+        following: actor.id,
+        follower: auth.user?.id,
+      })
     }
 
     return response.status(200).send({})
