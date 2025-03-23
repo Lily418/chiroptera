@@ -91,6 +91,9 @@ export default class ActorsController {
       method: 'GET',
     })
 
+    logger.info(externalActor.status, 'External Actor Status')
+    logger.info(externalActor.text(), 'External Actor Text')
+
     const actorBody: any = await externalActor.json()
 
     logger.info(actorBody, 'External Actor Body')
@@ -116,16 +119,9 @@ export default class ActorsController {
     })
 
     logger.info(responseFromFollow.status, 'Status from follow')
-    try {
-      const responseFromFollowBody = await responseFromFollow.text()
-      const responseFromFollowJson = JSON.parse(responseFromFollowBody)
-      logger.info(responseFromFollowJson, 'responseFromFollowJson')
-    } catch (err) {
-      //noop
-    }
 
     if (responseFromFollow.ok) {
-      Following.create({
+      await Following.create({
         following: actor.id,
         follower: auth.user?.id,
       })

@@ -25,7 +25,7 @@ export default function SearchResults({
                   className="text-white bg-cyan-800 rounded p-1 text-center my-2 w-full"
                   onClick={() => {
                     fetch(`/api/actor/${encodeURIComponent(account.uri)}/follow`, {
-                      method: "POST"
+                      method: 'POST',
                     })
                   }}
                 >
