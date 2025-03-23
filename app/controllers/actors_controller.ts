@@ -91,6 +91,9 @@ export default class ActorsController {
     })
 
     const actorBody: any = await externalActor.json()
+
+    logger.info(actorBody, 'External Actor Body')
+
     await upsertActor({
       externalId: actorBody.id,
       inbox: actorBody.inbox,
