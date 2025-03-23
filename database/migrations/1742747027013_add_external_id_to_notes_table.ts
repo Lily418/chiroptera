@@ -4,7 +4,7 @@ export default class extends BaseSchema {
   protected tableName = 'notes'
 
   async up() {
-    this.schema.createTable(this.tableName, (table) => {
+    this.schema.alterTable(this.tableName, (table) => {
       table.text('external_id')
     })
   }
