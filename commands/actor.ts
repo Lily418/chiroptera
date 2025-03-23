@@ -10,10 +10,10 @@ export default class Echo extends BaseCommand {
 
   async run() {
     const response = await sendSignedRequest({
-      keyId: 'http://localhost:3333/actor/1',
-      host: 'localhost:3333',
-      path: '/actor/1',
-      protocol: 'http',
+      keyId: 'https://www.chiroptera.space/actor',
+      host: 'www.chiroptera.space',
+      path: '/actor/ghost',
+      protocol: 'https',
       method: 'GET',
     })
     console.log('response', response.ok)
