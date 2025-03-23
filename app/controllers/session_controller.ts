@@ -1,11 +1,9 @@
-import logger from '@adonisjs/core/services/logger'
 import User from '#models/user'
 import type { HttpContext } from '@adonisjs/core/http'
 
 export default class SessionController {
   async store({ request, response, auth }: HttpContext) {
     const body = request.body()
-    logger.info({ body: body }, 'Store request')
     const user = await User.verifyCredentials(body.email, body.password)
     await auth.use('web').login(user)
     response.status(200).send({})
