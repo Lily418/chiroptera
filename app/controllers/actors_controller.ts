@@ -54,7 +54,7 @@ export default class ActorsController {
 
   async follow({ request, response, auth }: HttpContext) {
     const usersExternalId = auth.user!.externalActorId
-    const actorId = decodeURI(request.param('actorId'))
+    const actorId = decodeURIComponent(request.param('actorId'))
     const uriAsUrl = new URL(actorId)
     const document = {
       '@context': 'https://www.w3.org/ns/activitystreams',
