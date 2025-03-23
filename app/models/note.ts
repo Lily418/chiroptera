@@ -20,7 +20,7 @@ export default class Note extends BaseModel {
   declare attributedActor: BelongsTo<typeof Actor>
 
   @column()
-  declare attributedTo: string
+  declare attributedTo: number
 
   @column()
   declare content: string

@@ -1,3 +1,4 @@
+import Actor from '#models/actor'
 import Note from '#models/note'
 import type { HttpContext } from '@adonisjs/core/http'
 import db from '@adonisjs/lucid/services/db'
@@ -12,7 +13,18 @@ export default class FeedController {
       'attributed_to',
       db.from('followings').select('following').where('follower', '=', auth.user!.id)
     )
-    return inertia.render('feed/index', { notes })
+
+    const actors: Record<number, any> = {}
+    await Promise.all(
+      notes.map(async (note) => {
+        if (!actors[note.attributedTo]) {
+          const actor = await Actor.find(note.attributedTo)
+          actors[note.attributedTo] = actor
+        }
+      })
+    )
+
+    return inertia.render('feed/index', { notes, actors })
   }
 
   async searchResults({ inertia, request }: HttpContext) {

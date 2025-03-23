@@ -1,12 +1,12 @@
 import vine from '@vinejs/vine'
 import { Formik, FormikHelpers, FormikValues } from 'formik'
-import { useState } from 'react'
+import { act, useState } from 'react'
 import { PageLayout } from '~/components/PageLayout'
 import { PageTitle } from '~/components/Typography/PageTitle'
 import { Subtitle } from '~/components/Typography/Subtitle'
 import { validateWithVine } from '~/util/formik_validate_with_vine'
 
-export default function Home({ notes }: { notes: { content: string }[] }) {
+export default function Home({ notes, actors }: { notes: { content: string, attributed_to: number }[], actors: Record<number, {url: string; preferred_username: string}> }) {
   return (
     <PageLayout>
       <div className="w-full flex flex-col gap-2 ">
@@ -51,12 +51,16 @@ export default function Home({ notes }: { notes: { content: string }[] }) {
         <Subtitle>Here are all my messages</Subtitle>
         <ul>
           {notes.map((note) => {
+            const actor = actors[note.attributed_to];
             return (
-              <li
+              <li>
+                <a href={actor.url}>{actor.preferred_username}</a>
+              <div
                 dangerouslySetInnerHTML={{
                   __html: note.content,
                 }}
               />
+              </li>
             )
           })}
         </ul>
