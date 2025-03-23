@@ -89,8 +89,8 @@ export default class ActorsController {
       method: 'GET',
     })
 
-    console.log(externalActor)
-    logger.info(externalActor, 'External Actor')
+    console.log(externalActor.body)
+    logger.info(externalActor.body, 'External Actor')
 
     const responseFromFollow = await sendSignedRequest({
       keyId: `${process.env.BASE_INSTANCE_ID}/actor`,
