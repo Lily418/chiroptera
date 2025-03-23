@@ -13,6 +13,7 @@ const ActorsController = () => import('#controllers/actors_controller')
 const SessionController = () => import('#controllers/session_controller')
 const FeedsController = () => import('#controllers/feed_controller')
 const InboxController = () => import('#controllers/inbox_controller')
+const NoteController = () => import('#controllers/note_controller')
 
 router.get('/.well-known/webfinger', async () => {
   return {
@@ -47,5 +48,6 @@ router
     router.get('/searchResults', [FeedsController, 'searchResults'])
     router.get('/profile/:actorId', [FeedsController, 'profileFeed'])
     router.post('/api/actor/:actorId/follow', [ActorsController, 'follow'])
+    router.post('/note', [NoteController, 'create'])
   })
   .use(middleware.auth())

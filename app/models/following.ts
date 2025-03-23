@@ -1,7 +1,6 @@
 import { BaseModel, belongsTo, column } from '@adonisjs/lucid/orm'
 import Actor from './actor.js'
 import type { BelongsTo } from '@adonisjs/lucid/types/relations'
-import User from './user.js'
 
 export default class Following extends BaseModel {
   @column({ isPrimary: true })
@@ -16,11 +15,11 @@ export default class Following extends BaseModel {
   @column()
   declare following: number
 
-  @belongsTo(() => User, {
+  @belongsTo(() => Actor, {
     localKey: 'follower',
     foreignKey: 'id',
   })
-  declare followerUser: BelongsTo<typeof User>
+  declare followerUser: BelongsTo<typeof Actor>
 
   @column()
   declare follower: number

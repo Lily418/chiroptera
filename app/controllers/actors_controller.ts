@@ -6,6 +6,7 @@ import User from '#models/user'
 import { sendSignedRequest } from '../../signing/sign_request.js'
 import { upsertActor } from '#services/actor'
 import Following from '#models/following'
+import Actor from '#models/actor'
 
 export default class ActorsController {
   async get({ request, response }: HttpContext) {
@@ -30,9 +31,14 @@ export default class ActorsController {
       }
     } else {
       console.log('id to search for', `${process.env.BASE_INSTANCE_ID}/actor/${id}`)
-      const user = await User.findBy({
-        externalActorId: `${process.env.BASE_INSTANCE_ID}/actor/${id}`,
-      })
+      const user = await Actor.query()
+        .where({
+          external_id: `${process.env.BASE_INSTANCE_ID}/actor/${id}`,
+        })
+        .andWhereNot({
+          local_user: null,
+        })
+        .first()
 
       if (!user) {
         return response.abort({}, 404)
@@ -41,7 +47,7 @@ export default class ActorsController {
         '@context': ['https://www.w3.org/ns/activitystreams', 'https://w3id.org/security/v1'],
         'id': `${process.env.BASE_INSTANCE_ID}/actor/${id}`,
         'type': 'Person',
-        'preferredUsername': user.displayName,
+        'preferredUsername': user.preferred_username,
         'inbox': `${process.env.BASE_INSTANCE_ID}/inbox`,
         'publicKey': {
           id: `${process.env.BASE_INSTANCE_ID}/actor/${id}#main-key`,
@@ -53,7 +59,7 @@ export default class ActorsController {
   }
 
   async follow({ request, response, auth }: HttpContext) {
-    const usersExternalId = auth.user!.externalActorId
+    const usersExternalId = auth.user!.actor.external_id
     const actorId = decodeURIComponent(request.param('actorId'))
     const uriAsUrl = new URL(actorId)
     const protocolForActor = uriAsUrl.protocol.substring(0, uriAsUrl.protocol.length - 1)

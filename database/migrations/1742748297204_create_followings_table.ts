@@ -9,7 +9,7 @@ export default class extends BaseSchema {
       table.integer('following').unsigned()
       table.foreign('following').references('actors.id')
       table.integer('follower').unsigned()
-      table.foreign('follower').references('users.id')
+      table.foreign('follower').references('actors.id')
     })
   }
 

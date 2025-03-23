@@ -55,7 +55,7 @@ export default function Home({
           </div>
         </div>
         <div className="bg-sky-100 my-4 p-2 flex flex-col gap-2">
-          {/* <Formik
+          <Formik
             initialValues={{ content: '' }}
             onSubmit={(values) => {}}
             validate={async (values) => {
@@ -63,21 +63,29 @@ export default function Home({
                 values,
                 vine.compile(
                   vine.object({
-                    query: vine.string().minLength(1).bail(false),
+                    content: vine.string().minLength(1).bail(false),
                   })
                 )
               )
             }}
           >
-            <Subtitle>Posting as {user.displayName}</Subtitle>
-            <textarea className="bg-white w-full h-[6rem]" />
-            <button
-              type="submit"
-              className="text-white bg-cyan-800 rounded p-1 text-center lowercase"
-            >
-              Chirp
-            </button>
-          </Formik> */}
+            {({ handleChange, handleSubmit, values }) => (
+              <form onSubmit={handleSubmit}>
+                <Subtitle>Posting as {user.displayName}</Subtitle>
+                <textarea
+                  className="bg-white w-full h-[6rem]"
+                  onChange={handleChange}
+                  value={values.content}
+                />
+                <button
+                  type="submit"
+                  className="text-white bg-cyan-800 rounded p-1 text-center lowercase"
+                >
+                  Chirp
+                </button>
+              </form>
+            )}
+          </Formik>
         </div>
 
         <Subtitle>Here are all my messages</Subtitle>

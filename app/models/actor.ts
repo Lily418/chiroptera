@@ -1,7 +1,9 @@
 import { DateTime } from 'luxon'
-import { BaseModel, column, hasMany } from '@adonisjs/lucid/orm'
+import { BaseModel, belongsTo, column, hasMany, hasOne, manyToMany } from '@adonisjs/lucid/orm'
 import Note from './note.js'
 import * as relations from '@adonisjs/lucid/types/relations'
+import User from './user.js'
+import type { BelongsTo, HasOne, ManyToMany } from '@adonisjs/lucid/types/relations'
 
 export default class Actor extends BaseModel {
   @column({ isPrimary: true })
@@ -36,4 +38,22 @@ export default class Actor extends BaseModel {
 
   @column()
   declare object: Record<string, any>
+
+  @hasOne(() => User, {
+    localKey: 'local_user',
+    foreignKey: 'id',
+  })
+  declare localUser: HasOne<typeof User>
+
+  @column()
+  declare local_user: number
+
+  @manyToMany(() => Actor, {
+    pivotTable: 'followings',
+    localKey: 'id',
+    pivotForeignKey: 'follower',
+    relatedKey: 'id',
+    pivotRelatedForeignKey: 'following',
+  })
+  declare following: ManyToMany<typeof Actor>
 }

@@ -1,17 +1,18 @@
 import { BaseSchema } from '@adonisjs/lucid/schema'
 
 export default class extends BaseSchema {
-  protected tableName = 'users'
+  protected tableName = 'actors'
 
   async up() {
     this.schema.alterTable(this.tableName, (table) => {
-      table.string('external_actor_id', 2000)
+      table.integer('local_user').unsigned().unique()
+      table.foreign('local_user').references('users.id')
     })
   }
 
   async down() {
     this.schema.alterTable(this.tableName, (table) => {
-      table.dropColumn('external_actor_id')
+      table.dropColumn('local_user')
     })
   }
 }
