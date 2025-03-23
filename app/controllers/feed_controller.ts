@@ -1,6 +1,7 @@
 import Actor from '#models/actor'
 import Note from '#models/note'
 import User from '#models/user'
+import { fetchOutbox } from '#services/actor'
 import type { HttpContext } from '@adonisjs/core/http'
 import db from '@adonisjs/lucid/services/db'
 
@@ -70,9 +71,10 @@ export default class FeedController {
     })
   }
 
-  async profileFeed({ inertia, request }: HttpContext) {
+  async profileFeed({ inertia, request, auth }: HttpContext) {
     const actorId = request.param('actorId')
     const actor = await Actor.find(actorId)
+    await fetchOutbox({ actorId: actor!.id, userId: auth.user!.id })
     const notes = await Note.findManyBy({ attributedTo: actorId })
     return inertia.render('feed/profile', {
       actor,
