@@ -63,6 +63,8 @@ export default class ActorsController {
       'object': request.param('actorId'),
     }
 
+    logger.info(document, 'Follow Document')
+
     await sendSignedRequest({
       keyId: `${process.env.BASE_INSTANCE_ID}/actor`,
       host: uriAsUrl.host,
