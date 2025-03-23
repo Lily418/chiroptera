@@ -89,6 +89,7 @@ export default class ActorsController {
       method: 'GET',
     })
 
+    logger.info(externalActor.status, 'Status')
     console.log(externalActor.body)
     logger.info(externalActor.body, 'External Actor')
 
