@@ -92,7 +92,6 @@ export default class ActorsController {
     })
 
     logger.info(externalActor.status, 'External Actor Status')
-    logger.info(externalActor.text(), 'External Actor Text')
 
     const actorBody: any = await externalActor.json()
 
