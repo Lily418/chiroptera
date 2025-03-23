@@ -15,7 +15,7 @@ export default class FeedController {
   async getAuthenticated({ inertia, auth }: HttpContext) {
     const authedActor = await Actor.findBy({ local_user: auth.user!.id })
 
-    logger.info(Following.query().where('follower', '=', auth.user!.id), 'followings')
+    logger.info(await Following.query().where('follower', '=', auth.user!.id), 'followings')
 
     const notes = await Note.query()
       .whereIn(
