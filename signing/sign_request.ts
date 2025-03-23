@@ -79,7 +79,7 @@ export const sendSignedRequest = async ({
     document,
   })
 
-  console.log(`${protocol}://${host}${path}${hash ?? ''}`, 'About to fetch')
+  logger.info(`${protocol}://${host}${path}${hash ?? ''}`, 'About to fetch')
   const response = await fetch(
     new Request(`${protocol}://${host}${path}${hash ?? ''}`, {
       method,
@@ -88,7 +88,7 @@ export const sendSignedRequest = async ({
     })
   )
 
-  console.log(response, 'response')
+  logger.info(response, 'response')
 
   return response
 }

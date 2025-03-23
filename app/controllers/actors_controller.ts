@@ -54,6 +54,15 @@ export default class ActorsController {
     const usersExternalId = auth.user!.externalActorId
     const actorId = decodeURIComponent(request.param('actorId'))
     const uriAsUrl = new URL(actorId)
+
+    if (uriAsUrl.protocol !== 'http' && uriAsUrl.protocol !== 'https') {
+      return response.abort({ error: 'Unsupported actor protocol' }, 400)
+    }
+
+    if (uriAsUrl.protocol === 'http' && process.env.ALLOW_HTTP_KEYS !== 'true') {
+      return response.abort({ error: 'http actor protocol not allowed' }, 400)
+    }
+
     const document = {
       '@context': 'https://www.w3.org/ns/activitystreams',
       'id': `${process.env.BASE_INSTANCE_ID}/${uuidv4()}`,
@@ -62,13 +71,24 @@ export default class ActorsController {
       'object': actorId,
     }
 
+    logger.info(uriAsUrl, 'uriAsUrl')
     logger.info(document, 'Follow Document')
+
+    const externalActor = await sendSignedRequest({
+      keyId: `${process.env.BASE_INSTANCE_ID}/actor`,
+      host: uriAsUrl.host,
+      path: uriAsUrl.pathname,
+      protocol: uriAsUrl.protocol,
+      method: 'GET',
+    })
+
+    logger.info(externalActor, 'External Actor')
 
     const responseFromFollow = await sendSignedRequest({
       keyId: `${process.env.BASE_INSTANCE_ID}/actor`,
       host: uriAsUrl.host,
       path: '/inbox',
-      protocol: 'http',
+      protocol: uriAsUrl.protocol,
       method: 'POST',
       document: document,
     })
