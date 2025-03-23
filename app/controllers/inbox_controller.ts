@@ -29,7 +29,6 @@ const handleCreateNote = async ({
 }: Pick<HttpContext, 'request' | 'response'>) => {
   const body = request.body()
   const actorUrl = new URL(body.actor)
-  const attributedTo = body.object.attributedTo
   const attributedUrl = new URL(body.object.attributedTo)
 
   if (actorUrl.origin !== attributedUrl.origin) {
