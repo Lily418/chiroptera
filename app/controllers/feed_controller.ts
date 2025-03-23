@@ -3,6 +3,7 @@ import Note from '#models/note'
 import User from '#models/user'
 import { fetchOutbox } from '#services/actor'
 import type { HttpContext } from '@adonisjs/core/http'
+import logger from '@adonisjs/core/services/logger'
 import db from '@adonisjs/lucid/services/db'
 
 export default class FeedController {
@@ -12,6 +13,11 @@ export default class FeedController {
 
   async getAuthenticated({ inertia, auth }: HttpContext) {
     const authedActor = await Actor.findBy({ local_user: auth.user!.id })
+
+    logger.info(
+      db.from('followings').select('following').where('follower', '=', auth.user!.id),
+      'followings'
+    )
 
     const notes = await Note.query()
       .whereIn(
