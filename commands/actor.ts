@@ -10,8 +10,8 @@ export default class Echo extends BaseCommand {
 
   async run() {
     const response = await sendSignedRequest({
-      keyId: 'https://www.chiroptera.space/actor',
-      host: 'www.chiroptera.space',
+      keyId: 'https://chiroptera.space/actor',
+      host: 'chiroptera.space',
       path: '/actor/ghost',
       protocol: 'https',
       method: 'GET',

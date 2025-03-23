@@ -36,7 +36,7 @@ test.group('Actor', () => {
       await User.create({
         email: 'hello@chiroptera.space',
         password: 'testpassword',
-        externalActorId: 'https://www.chiroptera.space/actor/pipistrelle',
+        externalActorId: 'https://chiroptera.space/actor/pipistrelle',
       })
     })
     .teardown(async () => {

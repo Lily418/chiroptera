@@ -6,7 +6,7 @@ import adonisjs from '@adonisjs/vite/client'
 
 export default defineConfig({
   server: {
-    allowedHosts: ['www.chiroptera.space', 'chiroptera.space'],
+    allowedHosts: ['chiroptera.space'],
   },
   plugins: [
     inertia({ ssr: { enabled: true, entrypoint: 'inertia/app/ssr.tsx' } }),
