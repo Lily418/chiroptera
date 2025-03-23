@@ -122,12 +122,12 @@ const handleDelete = async ({ request, response }: Pick<HttpContext, 'request' |
     return response.status(401).send({ error: 'Actor does not match object to delete' })
   }
 
-  let note = await Note.find({ external_id: idToDelete })
+  let note = await Note.findBy({ external_id: idToDelete })
   if (note) {
     await note.delete()
   }
 
-  let actor = await Actor.find({ external_id: idToDelete })
+  let actor = await Actor.findBy({ external_id: idToDelete })
   if (actor) {
     await actor.delete()
   }
