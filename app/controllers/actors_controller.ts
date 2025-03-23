@@ -56,11 +56,17 @@ export default class ActorsController {
     const uriAsUrl = new URL(actorId)
 
     if (uriAsUrl.protocol !== 'http' && uriAsUrl.protocol !== 'https') {
-      return response.abort({ error: 'Unsupported actor protocol' }, 400)
+      return response.abort(
+        { error: 'Unsupported actor protocol', protocol: uriAsUrl.protocol },
+        400
+      )
     }
 
     if (uriAsUrl.protocol === 'http' && process.env.ALLOW_HTTP_KEYS !== 'true') {
-      return response.abort({ error: 'http actor protocol not allowed' }, 400)
+      return response.abort(
+        { error: 'http actor protocol not allowed', protocol: uriAsUrl.protocol },
+        400
+      )
     }
 
     const document = {
