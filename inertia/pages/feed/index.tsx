@@ -8,11 +8,11 @@ import { validateWithVine } from '~/util/formik_validate_with_vine'
 export default function Home({
   notes,
   actors,
-  following,
+  user,
 }: {
   notes: { id: number; content: string; attributedTo: number }[]
   actors: Record<number, { url: string; preferredUsername: string; id: number }>
-  following: { id: number; url: string; preferredUsername: string }[]
+  user: { displayName: string; following: { id: number; url: string; preferredUsername: string }[] }
 }) {
   return (
     <PageLayout>
@@ -54,6 +54,31 @@ export default function Home({
             </Formik>
           </div>
         </div>
+        <div className="bg-sky-100 my-4 p-2 flex flex-col gap-2">
+          {/* <Formik
+            initialValues={{ content: '' }}
+            onSubmit={(values) => {}}
+            validate={async (values) => {
+              return await validateWithVine(
+                values,
+                vine.compile(
+                  vine.object({
+                    query: vine.string().minLength(1).bail(false),
+                  })
+                )
+              )
+            }}
+          >
+            <Subtitle>Posting as {user.displayName}</Subtitle>
+            <textarea className="bg-white w-full h-[6rem]" />
+            <button
+              type="submit"
+              className="text-white bg-cyan-800 rounded p-1 text-center lowercase"
+            >
+              Chirp
+            </button>
+          </Formik> */}
+        </div>
 
         <Subtitle>Here are all my messages</Subtitle>
         <ul>
@@ -76,7 +101,7 @@ export default function Home({
 
         <Subtitle>Following</Subtitle>
 
-        {following.map((follow) => {
+        {user.following.map((follow) => {
           return (
             <li key={follow.id}>
               <a href={`/profile/${follow.id}`} className="text-blue-500 underline">

@@ -18,8 +18,6 @@ export default class FeedController {
 
     const user = await User.query().where({ id: auth.user!.id }).preload('following').first()
 
-    const following = user?.following
-
     const actors: Record<number, any> = {}
     await Promise.all(
       notes.map(async (note) => {
@@ -30,7 +28,7 @@ export default class FeedController {
       })
     )
 
-    return inertia.render('feed/index', { notes, actors, following })
+    return inertia.render('feed/index', { notes, actors, user })
   }
 
   async searchResults({ inertia, request }: HttpContext) {
