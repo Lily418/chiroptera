@@ -116,8 +116,8 @@ export default class ActorsController {
     })
 
     logger.info(responseFromFollow.status, 'Status from follow')
-    const responseFromFollowBody = await responseFromFollow.text()
     try {
+      const responseFromFollowBody = await responseFromFollow.text()
       const responseFromFollowJson = JSON.parse(responseFromFollowBody)
       logger.info(responseFromFollowJson, 'responseFromFollowJson')
     } catch (err) {

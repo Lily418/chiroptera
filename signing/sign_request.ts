@@ -88,7 +88,5 @@ export const sendSignedRequest = async ({
     })
   )
 
-  logger.info(response, 'response')
-
   return response
 }
