@@ -32,8 +32,6 @@ export default class ActorsController {
         externalActorId: `${process.env.BASE_INSTANCE_ID}/actor/${id}`,
       })
 
-      console.log(await User.all())
-
       if (!user) {
         return response.abort({}, 404)
       }

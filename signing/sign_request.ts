@@ -34,10 +34,7 @@ export const createSignedMessage = ({
     'base64'
   )
 
-  const header =
-    `keyId="${keyId}",headers="(request-target) host date${document ? ' digest' : ''}",signature="` +
-    signature +
-    '"'
+  const header = `keyId="${keyId}",headers="(request-target) host date${document ? ' digest' : ''}",signature="${signature}"`
 
   const headers: Record<string, string> = {
     'Accept': 'application/activity+json',
@@ -82,7 +79,7 @@ export const sendSignedRequest = async ({
     document,
   })
 
-  logger.info(`${protocol}://${host}${path}${hash ?? ''}`, 'About to fetch')
+  console.log(`${protocol}://${host}${path}${hash ?? ''}`, 'About to fetch')
   const response = await fetch(
     new Request(`${protocol}://${host}${path}${hash ?? ''}`, {
       method,
@@ -91,7 +88,7 @@ export const sendSignedRequest = async ({
     })
   )
 
-  logger.info(response, 'response')
+  console.log(response, 'response')
 
   return response
 }

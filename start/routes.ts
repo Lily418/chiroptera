@@ -28,8 +28,6 @@ router.get('/.well-known/webfinger', async () => {
   }
 })
 
-// For now don't require signatures to get the actor - in the future we can have a public instance actor and expect requests for user actors to be signed
-// https://stackoverflow.com/a/77760840
 router.get('/actor', [ActorsController, 'get'])
 
 router
