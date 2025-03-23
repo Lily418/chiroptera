@@ -11,7 +11,7 @@ export default class extends BaseSchema {
       table.timestamp('created_at')
       table.timestamp('updated_at')
       table.text('content')
-      table.string('attributed_to', 2000)
+      table.integer('attributed_to').unsigned()
       table.foreign('attributed_to').references('actors.id')
     })
   }
