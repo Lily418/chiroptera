@@ -6,7 +6,7 @@ import { PageTitle } from '~/components/Typography/PageTitle'
 import { Subtitle } from '~/components/Typography/Subtitle'
 import { validateWithVine } from '~/util/formik_validate_with_vine'
 
-export default function Home({ notes, actors }: { notes: { content: string, attributed_to: number }[], actors: Record<number, {url: string; preferred_username: string}> }) {
+export default function Home({ notes, actors }: { notes: { content: string, attributedTo: number }[], actors: Record<number, {url: string; preferred_username: string}> }) {
   return (
     <PageLayout>
       <div className="w-full flex flex-col gap-2 ">
@@ -50,11 +50,8 @@ export default function Home({ notes, actors }: { notes: { content: string, attr
 
         <Subtitle>Here are all my messages</Subtitle>
         <ul>
-          {JSON.stringify(notes)}
-          {JSON.stringify(actors)}
-
-          {/* {notes.map((note) => {
-            const actor = actors[note.attributed_to];
+          {notes.map((note) => {
+            const actor = actors[note.attributedTo];
             return (
               <li>
                 <a href={actor.url}>{actor.preferred_username}</a>
@@ -65,7 +62,7 @@ export default function Home({ notes, actors }: { notes: { content: string, attr
               />
               </li>
             )
-          })} */}
+          })}
         </ul>
       </div>
     </PageLayout>
