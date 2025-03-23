@@ -1,15 +1,17 @@
 import Note from '#models/note'
 import type { HttpContext } from '@adonisjs/core/http'
+import db from '@adonisjs/lucid/services/db'
 
 export default class FeedController {
   async getPublic({ inertia }: HttpContext) {
     return inertia.render('home')
   }
 
-  async getAuthenticated({ inertia }: HttpContext) {
-    const notes = await Note.findManyBy({
-      isPublic: true,
-    })
+  async getAuthenticated({ inertia, auth }: HttpContext) {
+    const notes = await Note.query().whereIn(
+      'attributed_to',
+      db.from('followings').select('following').where('follower', '=', auth.user!.id)
+    )
     return inertia.render('feed/index', { notes })
   }
 
