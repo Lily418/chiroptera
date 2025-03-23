@@ -103,7 +103,7 @@ export default class ActorsController {
     const actorsInbox = new URL(actorBody.inbox)
 
     const responseFromFollow = await sendSignedRequest({
-      keyId: `${process.env.BASE_INSTANCE_ID}/actor`,
+      keyId: usersExternalId,
       host: actorsInbox.host,
       path: actorsInbox.pathname,
       protocol: protocolForActor,
