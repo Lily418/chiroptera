@@ -4,6 +4,7 @@ import type { HttpContext } from '@adonisjs/core/http'
 import logger from '@adonisjs/core/services/logger'
 import User from '#models/user'
 import { sendSignedRequest } from '../../signing/sign_request.js'
+import { upsertActor } from '#services/actor'
 
 export default class ActorsController {
   async get({ request, response }: HttpContext) {
@@ -89,21 +90,30 @@ export default class ActorsController {
       method: 'GET',
     })
 
-    logger.info(externalActor.status, 'Status')
-    const actorBody = await externalActor.json()
-    console.log(actorBody)
-    logger.info(actorBody, 'External Actor')
+    const actorBody: any = await externalActor.json()
+    await upsertActor({
+      externalId: actorBody.id,
+      inbox: actorBody.inbox,
+      outbox: actorBody.outbox,
+      preferredUsername: actorBody.preferredUsername,
+      url: actorBody.url,
+      object: actorBody,
+    })
+
+    const actorsInbox = new URL(actorBody.inbox)
 
     const responseFromFollow = await sendSignedRequest({
       keyId: `${process.env.BASE_INSTANCE_ID}/actor`,
-      host: uriAsUrl.host,
-      path: '/inbox',
+      host: actorsInbox.host,
+      path: actorsInbox.pathname,
       protocol: protocolForActor,
       method: 'POST',
       document: document,
     })
 
-    logger.info(responseFromFollow, 'Response from follow')
+    logger.info(responseFromFollow.status, 'Status from follow')
+    const responseFromFollowJson = await responseFromFollow.json()
+    logger.info(responseFromFollowJson, 'responseFromFollowJson')
 
     return response.status(200).send({})
   }

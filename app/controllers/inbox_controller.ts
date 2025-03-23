@@ -4,6 +4,8 @@ import Note from '#models/note'
 import { activityStreamValidator } from '#validators/activity_pub_signing_middleware'
 import type { HttpContext } from '@adonisjs/core/http'
 import logger from '@adonisjs/core/services/logger'
+import { sendSignedRequest } from '../../signing/sign_request.js'
+import { upsertActor } from '#services/actor'
 
 const additionalContextValidation = ({
   request,
@@ -35,12 +37,36 @@ const handleCreateNote = async ({
     return response.status(401).send({ error: 'Actor does not match attributed' })
   }
 
-  let actor = await Actor.find(attributedTo)
-  if (!actor) {
-    actor = await Actor.create({
-      id: attributedTo,
-    })
+  const protocolForActor = actorUrl.protocol.substring(0, actorUrl.protocol.length - 1)
+
+  if (protocolForActor !== 'http' && protocolForActor !== 'https') {
+    return response.abort({ error: 'Unsupported actor protocol', protocol: protocolForActor }, 400)
   }
+
+  if (protocolForActor === 'http' && process.env.ALLOW_HTTP_KEYS !== 'true') {
+    return response.abort(
+      { error: 'http actor protocol not allowed', protocol: protocolForActor },
+      400
+    )
+  }
+
+  const externalActor = await sendSignedRequest({
+    keyId: `${process.env.BASE_INSTANCE_ID}/actor`,
+    host: actorUrl.host,
+    path: actorUrl.pathname,
+    protocol: protocolForActor,
+    method: 'GET',
+  })
+  const actorBody: any = await externalActor.json()
+
+  const actor = await upsertActor({
+    externalId: actorBody.id,
+    inbox: actorBody.inbox,
+    outbox: actorBody.outbox,
+    preferredUsername: actorBody.preferredUsername,
+    url: actorBody.url,
+    object: actorBody,
+  })
 
   const publicStream = 'https://www.w3.org/ns/activitystreams#Public'
   const isPublic =
