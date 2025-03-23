@@ -40,13 +40,13 @@ export const upsertActor = async ({
 }
 
 export const fetchOutbox = async ({ actorId, userId }: { actorId: number; userId: number }) => {
-  const user = await User.find(userId)
+  const user = await User.query().where({ id: userId }).preload('actor').first()
   const actor = await Actor.find(actorId)
 
   const outboxUrl = new URL(actor!.outbox)
 
   const outbox = await sendSignedRequest({
-    keyId: user!.externalActorId,
+    keyId: user!.actor.external_id,
     host: outboxUrl.host,
     path: outboxUrl.pathname,
     protocol: 'https',
@@ -64,7 +64,7 @@ export const fetchOutbox = async ({ actorId, userId }: { actorId: number; userId
 
   while (pageUrl) {
     const page = await sendSignedRequest({
-      keyId: user!.externalActorId,
+      keyId: user!.actor.external_id,
       host: pageUrl.host,
       path: `${pageUrl.pathname}?${pageUrl.searchParams.toString()}`,
       protocol: 'https',

@@ -59,7 +59,9 @@ export default class ActorsController {
   }
 
   async follow({ request, response, auth }: HttpContext) {
-    const usersExternalId = auth.user!.actor.external_id
+    const authedActor = await Actor.findBy({ local_user: auth.user!.id })
+    logger.info(authedActor, 'authedActor')
+    const usersExternalId = authedActor!.external_id
     const actorId = decodeURIComponent(request.param('actorId'))
     const uriAsUrl = new URL(actorId)
     const protocolForActor = uriAsUrl.protocol.substring(0, uriAsUrl.protocol.length - 1)
@@ -128,7 +130,7 @@ export default class ActorsController {
     if (responseFromFollow.ok) {
       await Following.create({
         following: actor.id,
-        follower: auth.user?.id,
+        follower: authedActor!.id,
       })
     }
 

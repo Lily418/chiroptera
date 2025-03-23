@@ -12,7 +12,10 @@ export default function Home({
 }: {
   notes: { id: number; content: string; attributedTo: number }[]
   actors: Record<number, { url: string; preferredUsername: string; id: number }>
-  user: { displayName: string; following: { id: number; url: string; preferredUsername: string }[] }
+  user: {
+    displayName: string
+    actor: { following: { id: number; url: string; preferredUsername: string }[] }
+  }
 }) {
   return (
     <PageLayout>
@@ -109,7 +112,7 @@ export default function Home({
 
         <Subtitle>Following</Subtitle>
 
-        {user.following.map((follow) => {
+        {user.actor.following.map((follow) => {
           return (
             <li key={follow.id}>
               <a href={`/profile/${follow.id}`} className="text-blue-500 underline">

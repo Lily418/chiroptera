@@ -16,7 +16,12 @@ export default class FeedController {
       db.from('followings').select('following').where('follower', '=', auth.user!.id)
     )
 
-    const user = await User.query().where({ id: auth.user!.id }).preload('following').first()
+    const user = await User.query()
+      .where({ id: auth.user!.id })
+      .preload('actor', (actorQuery) => {
+        actorQuery.preload('following')
+      })
+      .first()
 
     const actors: Record<number, any> = {}
     await Promise.all(
