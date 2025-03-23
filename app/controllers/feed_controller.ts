@@ -1,4 +1,5 @@
 import Actor from '#models/actor'
+import Following from '#models/following'
 import Note from '#models/note'
 import User from '#models/user'
 import { fetchOutbox } from '#services/actor'
@@ -14,10 +15,7 @@ export default class FeedController {
   async getAuthenticated({ inertia, auth }: HttpContext) {
     const authedActor = await Actor.findBy({ local_user: auth.user!.id })
 
-    logger.info(
-      db.from('followings').select('following').where('follower', '=', auth.user!.id),
-      'followings'
-    )
+    logger.info(Following.query().where('follower', '=', auth.user!.id), 'followings')
 
     const notes = await Note.query()
       .whereIn(
