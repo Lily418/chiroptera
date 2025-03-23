@@ -13,14 +13,19 @@ export default class Actor extends BaseModel {
   @column.dateTime({ autoCreate: true, autoUpdate: true })
   declare updatedAt: DateTime
 
+  @column()
   declare external_id: string
 
+  @column()
   declare inbox: string
 
+  @column()
   declare outbox: string
 
+  @column()
   declare preferred_username: string
 
+  @column()
   declare url: string
 
   @hasMany(() => Note, {

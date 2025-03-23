@@ -15,7 +15,7 @@ export const upsertActor = async ({
   url: string
   object: Record<string, any>
 }) => {
-  const actor = await Actor.find(externalId)
+  const actor = await Actor.findBy({ external_id: externalId })
   if (actor) {
     actor.preferred_username = preferredUsername
     actor.url = url
