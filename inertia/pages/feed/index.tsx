@@ -1,12 +1,11 @@
 import vine from '@vinejs/vine'
-import { Formik, FormikHelpers, FormikValues } from 'formik'
-import { act, useState } from 'react'
+import { Formik } from 'formik'
 import { PageLayout } from '~/components/PageLayout'
 import { PageTitle } from '~/components/Typography/PageTitle'
 import { Subtitle } from '~/components/Typography/Subtitle'
 import { validateWithVine } from '~/util/formik_validate_with_vine'
 
-export default function Home({ notes, actors }: { notes: { content: string, attributedTo: number }[], actors: Record<number, {url: string; preferred_username: string}> }) {
+export default function Home({ notes, actors, following }: { notes: { id: number, content: string, attributedTo: number }[], actors: Record<number, {url: string; preferredUsername: string}>, following: {id: number; url: string; preferredUsername: string }[]}) {
   return (
     <PageLayout>
       <div className="w-full flex flex-col gap-2 ">
@@ -53,8 +52,8 @@ export default function Home({ notes, actors }: { notes: { content: string, attr
           {notes.map((note) => {
             const actor = actors[note.attributedTo];
             return (
-              <li>
-                <a href={actor.url}>{actor.preferred_username}</a>
+              <li key={note.id}>
+                <a href={actor.url} className='text-blue-500 underline'>{actor.preferredUsername}</a>
               <div
                 dangerouslySetInnerHTML={{
                   __html: note.content,
@@ -64,6 +63,16 @@ export default function Home({ notes, actors }: { notes: { content: string, attr
             )
           })}
         </ul>
+
+        <Subtitle>Following</Subtitle>
+
+        {following.map((follow) => {
+          return (
+            <li key={follow.id}>
+              <a href={follow.url} className='text-blue-500 underline'>{follow.preferredUsername}</a>
+            </li>
+          )
+        })}
       </div>
     </PageLayout>
   )
