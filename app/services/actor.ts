@@ -2,7 +2,6 @@ import Actor from '#models/actor'
 import User from '#models/user'
 import logger from '@adonisjs/core/services/logger'
 import { sendSignedRequest } from '../../signing/sign_request.js'
-import Note from '#models/note'
 import { upsertNote } from './note.js'
 
 export const upsertActor = async ({

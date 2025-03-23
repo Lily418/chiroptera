@@ -1,6 +1,5 @@
 import fs from 'node:fs'
 import { createHash, createSign, constants } from 'node:crypto'
-import logger from '@adonisjs/core/services/logger'
 
 export const createSignedMessage = ({
   keyId,

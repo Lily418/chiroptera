@@ -1,9 +1,9 @@
 import { DateTime } from 'luxon'
-import { BaseModel, belongsTo, column, hasMany, hasOne, manyToMany } from '@adonisjs/lucid/orm'
+import { BaseModel, column, hasMany, hasOne, manyToMany } from '@adonisjs/lucid/orm'
 import Note from './note.js'
 import * as relations from '@adonisjs/lucid/types/relations'
 import User from './user.js'
-import type { BelongsTo, HasOne, ManyToMany } from '@adonisjs/lucid/types/relations'
+import type { HasOne, ManyToMany } from '@adonisjs/lucid/types/relations'
 
 export default class Actor extends BaseModel {
   @column({ isPrimary: true })
