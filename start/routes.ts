@@ -45,6 +45,7 @@ router
   .group(() => {
     router.get('/feed', [FeedsController, 'getAuthenticated'])
     router.get('/searchResults', [FeedsController, 'searchResults'])
+    router.get('/profile/:actorId', [FeedsController, 'profileFeed'])
     router.post('/api/actor/:actorId/follow', [ActorsController, 'follow'])
   })
   .use(middleware.auth())

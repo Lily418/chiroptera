@@ -1,9 +1,7 @@
 import Actor from '#models/actor'
-import Following from '#models/following'
 import Note from '#models/note'
 import User from '#models/user'
 import type { HttpContext } from '@adonisjs/core/http'
-import logger from '@adonisjs/core/services/logger'
 import db from '@adonisjs/lucid/services/db'
 
 export default class FeedController {
@@ -20,7 +18,6 @@ export default class FeedController {
     const user = await User.query().where({ id: auth.user!.id }).preload('following').first()
 
     const following = user?.following
-    console.log('following', following)
 
     const actors: Record<number, any> = {}
     await Promise.all(
@@ -70,6 +67,16 @@ export default class FeedController {
 
     return inertia.render('feed/search_results', {
       accounts,
+    })
+  }
+
+  async profileFeed({ inertia, request }: HttpContext) {
+    const actorId = request.param('actorId')
+    const actor = await Actor.find(actorId)
+    const notes = await Note.findManyBy({ attributedTo: actorId })
+    return inertia.render('feed/profile', {
+      actor,
+      notes,
     })
   }
 }

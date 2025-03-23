@@ -5,7 +5,15 @@ import { PageTitle } from '~/components/Typography/PageTitle'
 import { Subtitle } from '~/components/Typography/Subtitle'
 import { validateWithVine } from '~/util/formik_validate_with_vine'
 
-export default function Home({ notes, actors, following }: { notes: { id: number, content: string, attributedTo: number }[], actors: Record<number, {url: string; preferredUsername: string}>, following: {id: number; url: string; preferredUsername: string }[]}) {
+export default function Home({
+  notes,
+  actors,
+  following,
+}: {
+  notes: { id: number; content: string; attributedTo: number }[]
+  actors: Record<number, { url: string; preferredUsername: string; id: number }>
+  following: { id: number; url: string; preferredUsername: string }[]
+}) {
   return (
     <PageLayout>
       <div className="w-full flex flex-col gap-2 ">
@@ -50,15 +58,17 @@ export default function Home({ notes, actors, following }: { notes: { id: number
         <Subtitle>Here are all my messages</Subtitle>
         <ul>
           {notes.map((note) => {
-            const actor = actors[note.attributedTo];
+            const actor = actors[note.attributedTo]
             return (
               <li key={note.id}>
-                <a href={actor.url} className='text-blue-500 underline'>{actor.preferredUsername}</a>
-              <div
-                dangerouslySetInnerHTML={{
-                  __html: note.content,
-                }}
-              />
+                <a href={`/profile/${actor.id}`} className="text-blue-500 underline">
+                  {actor.preferredUsername}
+                </a>
+                <div
+                  dangerouslySetInnerHTML={{
+                    __html: note.content,
+                  }}
+                />
               </li>
             )
           })}
@@ -69,7 +79,9 @@ export default function Home({ notes, actors, following }: { notes: { id: number
         {following.map((follow) => {
           return (
             <li key={follow.id}>
-              <a href={follow.url} className='text-blue-500 underline'>{follow.preferredUsername}</a>
+              <a href={`/profile/${follow.id}`} className="text-blue-500 underline">
+                {follow.preferredUsername}
+              </a>
             </li>
           )
         })}
