@@ -89,6 +89,7 @@ export default class ActorsController {
       method: 'GET',
     })
 
+    console.log(externalActor)
     logger.info(externalActor, 'External Actor')
 
     const responseFromFollow = await sendSignedRequest({
